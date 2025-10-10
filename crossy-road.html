@@ -54,6 +54,22 @@
             border-radius: 10px;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
             background: #87CEEB;
+            position: relative;
+        }
+
+        .coin-display {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 1.5em;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+            pointer-events: none;
         }
 
         .controls {
@@ -114,7 +130,10 @@
                 <div>🪙 Coins: <span id="coins">0</span></div>
             </div>
         </div>
-        <canvas id="gameCanvas" width="600" height="600"></canvas>
+        <div style="position: relative; display: inline-block;">
+            <canvas id="gameCanvas" width="600" height="600"></canvas>
+            <div class="coin-display">🪙 <span id="coinDisplay">0</span></div>
+        </div>
         <div class="controls">
             <p>🎮 Use Arrow Keys to Move</p>
             <p>↑ Up | ↓ Down | ← Left | → Right</p>
@@ -1142,10 +1161,10 @@
                         score++;
                         // Check if it's time to spawn a coin
                         if (score === nextCoinSpawn) {
-                            // Spawn coin at a random x position on the next row
+                            // Spawn coin at a random x position further ahead
                             coinObjects.push({
                                 x: Math.floor(Math.random() * COLS),
-                                y: player.worldY - Math.floor(Math.random() * 3 + 2), // Spawn 2-4 rows ahead
+                                y: player.worldY - Math.floor(Math.random() * 5 + 8), // Spawn 8-12 rows ahead
                                 collected: false
                             });
                             // Set next coin spawn (5-18 jumps from now)
@@ -1185,6 +1204,7 @@
             document.getElementById('score').textContent = score;
             document.getElementById('highScore').textContent = highScore;
             document.getElementById('coins').textContent = coins;
+            document.getElementById('coinDisplay').textContent = coins;
         }
 
         function endGame() {
