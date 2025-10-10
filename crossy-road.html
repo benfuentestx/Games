@@ -286,7 +286,10 @@
             worldY: ROWS - 2, // Actual position in the world
             renderX: Math.floor(COLS / 2), // Smooth rendering position
             renderWorldY: ROWS - 2, // Smooth rendering position
-            color: '#FFD700'
+            color: '#FFD700',
+            isHopping: false,
+            hopProgress: 0,
+            hopHeight: 0
         };
 
         // Roads and cars
@@ -386,6 +389,19 @@
             const playerLerpFactor = 0.25;
             player.renderX += (player.x - player.renderX) * playerLerpFactor;
             player.renderWorldY += (player.worldY - player.renderWorldY) * playerLerpFactor;
+
+            // Update hopping animation
+            if (player.isHopping) {
+                player.hopProgress += deltaTime * 0.008; // Hop speed
+                if (player.hopProgress >= 1) {
+                    player.hopProgress = 0;
+                    player.isHopping = false;
+                    player.hopHeight = 0;
+                } else {
+                    // Parabolic hop using sine wave
+                    player.hopHeight = Math.sin(player.hopProgress * Math.PI) * 15;
+                }
+            }
 
             // Smooth camera interpolation (lerp) - prevents jerky movement
             const targetCameraY = player.renderWorldY - (ROWS - 5);
@@ -497,9 +513,9 @@
                 }
             });
 
-            // Draw player (chicken) with camera offset using smooth render positions
+            // Draw player (chicken) with camera offset using smooth render positions and hop offset
             const playerScreenY = (player.renderWorldY - cameraY) * GRID_SIZE;
-            drawChicken(player.renderX * GRID_SIZE + GRID_SIZE / 2, playerScreenY + GRID_SIZE / 2);
+            drawChicken(player.renderX * GRID_SIZE + GRID_SIZE / 2, playerScreenY + GRID_SIZE / 2 - player.hopHeight);
         }
 
         // Draw 3D road with perspective
@@ -1264,6 +1280,8 @@
                 case 'ArrowUp':
                     e.preventDefault();
                     player.worldY--;
+                    player.isHopping = true;
+                    player.hopProgress = 0;
                     // Update max progress
                     if (player.worldY < maxWorldY) {
                         maxWorldY = player.worldY;
@@ -1291,6 +1309,8 @@
                     // Don't allow moving past the starting position
                     if (player.worldY < startingWorldY) {
                         player.worldY++;
+                        player.isHopping = true;
+                        player.hopProgress = 0;
                         updateScoreDisplay();
                     }
                     break;
@@ -1298,12 +1318,16 @@
                     e.preventDefault();
                     if (player.x > 0) {
                         player.x--;
+                        player.isHopping = true;
+                        player.hopProgress = 0;
                     }
                     break;
                 case 'ArrowRight':
                     e.preventDefault();
                     if (player.x < COLS - 1) {
                         player.x++;
+                        player.isHopping = true;
+                        player.hopProgress = 0;
                     }
                     break;
             }
@@ -1354,6 +1378,9 @@
             player.worldY = ROWS - 2;
             player.renderX = Math.floor(COLS / 2);
             player.renderWorldY = ROWS - 2;
+            player.isHopping = false;
+            player.hopProgress = 0;
+            player.hopHeight = 0;
             cars = [];
             roads = [];
             cameraY = ROWS - 2 - (ROWS - 5);
@@ -1397,9 +1424,11 @@
             const exitBtn = document.getElementById('exitFullscreenBtn');
             const canvasContainer = document.getElementById('canvasContainer');
             const fullscreenBtn = document.getElementById('fullscreenBtn');
+            const gameOverScreen = document.getElementById('gameOver');
 
-            // Move entire canvas container to fullscreen
+            // Move entire canvas container and game over screen to fullscreen
             fullscreenContainer.appendChild(canvasContainer);
+            fullscreenContainer.appendChild(gameOverScreen);
             fullscreenContainer.classList.add('active');
             exitBtn.classList.add('show');
             fullscreenBtn.textContent = '✕ Exit Fullscreen';
@@ -1422,6 +1451,7 @@
             const canvasContainer = document.getElementById('canvasContainer');
             const fullscreenBtn = document.getElementById('fullscreenBtn');
             const gameContainer = document.querySelector('.game-container');
+            const gameOverScreen = document.getElementById('gameOver');
 
             // Exit browser fullscreen
             if (document.fullscreenElement) {
@@ -1438,6 +1468,9 @@
             // Insert after the score-board div
             const scoreBoard = gameContainer.querySelector('.score-board');
             scoreBoard.parentNode.insertBefore(canvasContainer, scoreBoard.nextSibling);
+
+            // Move game over screen back to body
+            document.body.appendChild(gameOverScreen);
 
             fullscreenContainer.classList.remove('active');
             exitBtn.classList.remove('show');
