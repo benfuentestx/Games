@@ -138,11 +138,16 @@
         let gameOver = false;
         let score = 0;
         let highScore = localStorage.getItem('crossyRoadHighScore') || 0;
+        let cameraY = 0; // Camera offset for scrolling
+        let minRowGenerated = 0; // Track the furthest row we've generated (going into negatives)
+        let startingWorldY = ROWS - 2; // Starting position
+        let maxWorldY = ROWS - 2; // Track the furthest the player has gone (lowest value)
 
         // Player
         let player = {
             x: Math.floor(COLS / 2),
             y: ROWS - 2,
+            worldY: ROWS - 2, // Actual position in the world
             color: '#FFD700'
         };
 
@@ -152,7 +157,7 @@
 
         // Initialize game
         function init() {
-            // Create roads (every other row is a road)
+            // Create initial roads (every other row is a road)
             for (let row = 0; row < ROWS; row++) {
                 if (row % 3 === 0 && row !== ROWS - 2) {
                     roads.push({
@@ -179,6 +184,40 @@
             updateScoreDisplay();
         }
 
+        // Generate new roads as player progresses
+        function generateNewRoads() {
+            const currentTopRow = Math.floor(cameraY);
+
+            // Generate roads ahead of the camera (going into negative rows)
+            while (minRowGenerated > currentTopRow - 10) {
+                if (minRowGenerated % 3 === 0 && minRowGenerated !== startingWorldY) {
+                    const newRoad = {
+                        row: minRowGenerated,
+                        direction: Math.random() > 0.5 ? 1 : -1
+                    };
+                    roads.push(newRoad);
+
+                    // Add cars to the new road
+                    const numCars = Math.floor(Math.random() * 2) + 1;
+                    for (let i = 0; i < numCars; i++) {
+                        cars.push({
+                            x: Math.random() * COLS,
+                            y: newRoad.row,
+                            width: Math.random() > 0.5 ? 2 : 1,
+                            speed: (Math.random() * 0.03 + 0.02) * newRoad.direction,
+                            color: getRandomCarColor()
+                        });
+                    }
+                }
+                minRowGenerated--;
+            }
+
+            // Clean up old roads and cars that are far behind
+            const maxVisibleRow = currentTopRow + ROWS + 10;
+            roads = roads.filter(road => road.row < maxVisibleRow);
+            cars = cars.filter(car => car.y < maxVisibleRow);
+        }
+
         function getRandomCarColor() {
             const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F'];
             return colors[Math.floor(Math.random() * colors.length)];
@@ -187,6 +226,14 @@
         // Update game
         function update() {
             if (gameOver) return;
+
+            // Update camera to follow player (worldY decreases as player moves up)
+            // Keep player near bottom of screen
+            const targetCameraY = player.worldY - (ROWS - 5);
+            cameraY = targetCameraY;
+
+            // Generate new roads as needed
+            generateNewRoads();
 
             // Move cars
             cars.forEach(car => {
@@ -210,34 +257,44 @@
             ctx.fillStyle = '#87CEEB';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Draw grass and roads
-            for (let row = 0; row < ROWS; row++) {
-                const isRoad = roads.some(road => road.row === row);
+            // Calculate visible rows
+            const startRow = Math.floor(cameraY);
+            const endRow = startRow + ROWS + 1;
+
+            // Draw grass and roads with camera offset
+            for (let worldRow = startRow; worldRow < endRow; worldRow++) {
+                const screenY = (worldRow - cameraY) * GRID_SIZE;
+                if (screenY < -GRID_SIZE || screenY > canvas.height) continue;
+
+                const isRoad = roads.some(road => road.row === worldRow);
                 if (isRoad) {
                     ctx.fillStyle = '#404040';
-                    ctx.fillRect(0, row * GRID_SIZE, canvas.width, GRID_SIZE);
+                    ctx.fillRect(0, screenY, canvas.width, GRID_SIZE);
 
                     // Road lines
                     ctx.strokeStyle = '#FFD700';
                     ctx.lineWidth = 2;
                     ctx.setLineDash([10, 10]);
                     ctx.beginPath();
-                    ctx.moveTo(0, row * GRID_SIZE + GRID_SIZE / 2);
-                    ctx.lineTo(canvas.width, row * GRID_SIZE + GRID_SIZE / 2);
+                    ctx.moveTo(0, screenY + GRID_SIZE / 2);
+                    ctx.lineTo(canvas.width, screenY + GRID_SIZE / 2);
                     ctx.stroke();
                     ctx.setLineDash([]);
                 } else {
                     ctx.fillStyle = '#90EE90';
-                    ctx.fillRect(0, row * GRID_SIZE, canvas.width, GRID_SIZE);
+                    ctx.fillRect(0, screenY, canvas.width, GRID_SIZE);
                 }
             }
 
-            // Draw cars
+            // Draw cars with camera offset
             cars.forEach(car => {
+                const screenY = (car.y - cameraY) * GRID_SIZE;
+                if (screenY < -GRID_SIZE || screenY > canvas.height) return;
+
                 ctx.fillStyle = car.color;
                 ctx.fillRect(
                     car.x * GRID_SIZE + 2,
-                    car.y * GRID_SIZE + 5,
+                    screenY + 5,
                     car.width * GRID_SIZE - 4,
                     GRID_SIZE - 10
                 );
@@ -246,18 +303,19 @@
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
                 ctx.fillRect(
                     car.x * GRID_SIZE + 8,
-                    car.y * GRID_SIZE + 10,
+                    screenY + 10,
                     car.width * GRID_SIZE - 16,
                     GRID_SIZE - 20
                 );
             });
 
-            // Draw player
+            // Draw player with camera offset
+            const playerScreenY = (player.worldY - cameraY) * GRID_SIZE;
             ctx.fillStyle = player.color;
             ctx.beginPath();
             ctx.arc(
                 player.x * GRID_SIZE + GRID_SIZE / 2,
-                player.y * GRID_SIZE + GRID_SIZE / 2,
+                playerScreenY + GRID_SIZE / 2,
                 GRID_SIZE / 2 - 4,
                 0,
                 Math.PI * 2
@@ -269,7 +327,7 @@
             ctx.beginPath();
             ctx.arc(
                 player.x * GRID_SIZE + GRID_SIZE / 2 - 8,
-                player.y * GRID_SIZE + GRID_SIZE / 2 - 5,
+                playerScreenY + GRID_SIZE / 2 - 5,
                 3,
                 0,
                 Math.PI * 2
@@ -278,7 +336,7 @@
             ctx.beginPath();
             ctx.arc(
                 player.x * GRID_SIZE + GRID_SIZE / 2 + 8,
-                player.y * GRID_SIZE + GRID_SIZE / 2 - 5,
+                playerScreenY + GRID_SIZE / 2 - 5,
                 3,
                 0,
                 Math.PI * 2
@@ -289,7 +347,7 @@
         // Check collision
         function checkCollision() {
             cars.forEach(car => {
-                if (Math.floor(car.y) === player.y) {
+                if (Math.floor(car.y) === player.worldY) {
                     const carLeft = car.x;
                     const carRight = car.x + car.width;
                     const playerPos = player.x + 0.5;
@@ -308,17 +366,23 @@
             switch(e.key) {
                 case 'ArrowUp':
                     e.preventDefault();
-                    if (player.y > 0) {
-                        player.y--;
+                    player.worldY--;
+                    // Update max progress
+                    if (player.worldY < maxWorldY) {
+                        maxWorldY = player.worldY;
                         score++;
-                        updateScoreDisplay();
+                        // Check for win condition at score 333
+                        if (score >= 333) {
+                            winGame();
+                        }
                     }
+                    updateScoreDisplay();
                     break;
                 case 'ArrowDown':
                     e.preventDefault();
-                    if (player.y < ROWS - 1) {
-                        player.y++;
-                        if (score > 0) score--;
+                    // Don't allow moving past the starting position
+                    if (player.worldY < startingWorldY) {
+                        player.worldY++;
                         updateScoreDisplay();
                     }
                     break;
@@ -355,14 +419,37 @@
             document.getElementById('gameOver').style.display = 'block';
         }
 
+        function winGame() {
+            gameOver = true;
+
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('crossyRoadHighScore', highScore);
+            }
+
+            document.getElementById('gameOver').querySelector('h2').textContent = 'YOU WIN!';
+            document.getElementById('gameOver').querySelector('h2').style.color = '#4ECDC4';
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('finalHighScore').textContent = highScore;
+            document.getElementById('gameOver').style.display = 'block';
+        }
+
         function restartGame() {
             gameOver = false;
             score = 0;
             player.x = Math.floor(COLS / 2);
             player.y = ROWS - 2;
+            player.worldY = ROWS - 2;
             cars = [];
             roads = [];
+            cameraY = ROWS - 2 - (ROWS - 5);
+            minRowGenerated = 0;
+            startingWorldY = ROWS - 2;
+            maxWorldY = ROWS - 2;
 
+            // Reset game over message
+            document.getElementById('gameOver').querySelector('h2').textContent = 'GAME OVER!';
+            document.getElementById('gameOver').querySelector('h2').style.color = '#ff6b6b';
             document.getElementById('gameOver').style.display = 'none';
 
             init();
