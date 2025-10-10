@@ -582,7 +582,7 @@
 
             // Draw player (chicken) with camera offset using smooth render positions and hop offset
             const playerScreenY = (player.renderWorldY - cameraY) * GRID_SIZE;
-            drawChicken(player.renderX * GRID_SIZE + GRID_SIZE / 2, playerScreenY + GRID_SIZE / 2 - player.hopHeight);
+            drawChicken(player.renderX * GRID_SIZE + GRID_SIZE / 2, playerScreenY + GRID_SIZE / 2 - player.hopHeight, isFlying);
         }
 
         // Draw 3D road with perspective
@@ -1096,14 +1096,21 @@
         }
 
         // Draw a realistic chicken with shading
-        function drawChicken(x, y) {
+        function drawChicken(x, y, flying = false) {
             const size = GRID_SIZE / 2 - 4;
 
-            // Shadow
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-            ctx.beginPath();
-            ctx.ellipse(x, y + size + 2, size * 0.8, size * 0.3, 0, 0, Math.PI * 2);
-            ctx.fill();
+            // Shadow (larger and more distant when flying)
+            if (flying) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+                ctx.beginPath();
+                ctx.ellipse(x, y + size + 30, size * 1.2, size * 0.4, 0, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.beginPath();
+                ctx.ellipse(x, y + size + 2, size * 0.8, size * 0.3, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
 
             // Body (white/cream colored)
             const bodyGradient = ctx.createRadialGradient(x - 3, y - 2, 2, x, y, size);
@@ -1130,22 +1137,57 @@
             ctx.closePath();
             ctx.fill();
 
-            // Wing (darker shading)
-            ctx.fillStyle = '#E0E0E0';
-            ctx.beginPath();
-            ctx.ellipse(x + size * 0.2, y + 2, size * 0.4, size * 0.6, 0.3, 0, Math.PI * 2);
-            ctx.fill();
-            // Wing feather details
-            ctx.strokeStyle = '#C0C0C0';
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(x + size * 0.1, y - size * 0.2);
-            ctx.lineTo(x + size * 0.4, y);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(x + size * 0.15, y);
-            ctx.lineTo(x + size * 0.45, y + size * 0.2);
-            ctx.stroke();
+            // Wings (spread out when flying)
+            if (flying) {
+                // Left wing (spread)
+                ctx.fillStyle = '#E0E0E0';
+                ctx.beginPath();
+                ctx.ellipse(x - size * 0.6, y - size * 0.1, size * 0.7, size * 0.4, -0.4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#C0C0C0';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(x - size * 0.3, y);
+                ctx.lineTo(x - size * 0.9, y - size * 0.2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(x - size * 0.35, y + size * 0.1);
+                ctx.lineTo(x - size * 0.85, y);
+                ctx.stroke();
+
+                // Right wing (spread)
+                ctx.fillStyle = '#D8D8D8';
+                ctx.beginPath();
+                ctx.ellipse(x + size * 0.6, y - size * 0.1, size * 0.7, size * 0.4, 0.4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#B8B8B8';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(x + size * 0.3, y);
+                ctx.lineTo(x + size * 0.9, y - size * 0.2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(x + size * 0.35, y + size * 0.1);
+                ctx.lineTo(x + size * 0.85, y);
+                ctx.stroke();
+            } else {
+                // Wing folded (darker shading)
+                ctx.fillStyle = '#E0E0E0';
+                ctx.beginPath();
+                ctx.ellipse(x + size * 0.2, y + 2, size * 0.4, size * 0.6, 0.3, 0, Math.PI * 2);
+                ctx.fill();
+                // Wing feather details
+                ctx.strokeStyle = '#C0C0C0';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(x + size * 0.1, y - size * 0.2);
+                ctx.lineTo(x + size * 0.4, y);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(x + size * 0.15, y);
+                ctx.lineTo(x + size * 0.45, y + size * 0.2);
+                ctx.stroke();
+            }
 
             // Head
             const headGradient = ctx.createRadialGradient(x + size * 0.3, y - size * 0.7, 2, x + size * 0.4, y - size * 0.6, size * 0.5);
