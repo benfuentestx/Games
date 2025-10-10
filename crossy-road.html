@@ -148,6 +148,8 @@
             x: Math.floor(COLS / 2),
             y: ROWS - 2,
             worldY: ROWS - 2, // Actual position in the world
+            renderX: Math.floor(COLS / 2), // Smooth rendering position
+            renderWorldY: ROWS - 2, // Smooth rendering position
             color: '#FFD700'
         };
 
@@ -241,20 +243,26 @@
         }
 
         // Update game
-        function update() {
+        function update(deltaTime) {
             if (gameOver) return;
 
-            // Update camera to follow player (worldY decreases as player moves up)
-            // Keep player near bottom of screen
-            const targetCameraY = player.worldY - (ROWS - 5);
-            cameraY = targetCameraY;
+            // Smooth player position interpolation
+            const playerLerpFactor = 0.25;
+            player.renderX += (player.x - player.renderX) * playerLerpFactor;
+            player.renderWorldY += (player.worldY - player.renderWorldY) * playerLerpFactor;
+
+            // Smooth camera interpolation (lerp) - prevents jerky movement
+            const targetCameraY = player.renderWorldY - (ROWS - 5);
+            const lerpFactor = 0.15; // Smoothness factor (lower = smoother but slower)
+            cameraY += (targetCameraY - cameraY) * lerpFactor;
 
             // Generate new roads as needed
             generateNewRoads();
 
-            // Move cars
+            // Move cars with delta time for smooth frame-independent movement
+            const timeScale = deltaTime / 16.67; // Normalize to 60fps
             cars.forEach(car => {
-                car.x += car.speed;
+                car.x += car.speed * timeScale;
 
                 // Wrap around
                 if (car.speed > 0 && car.x > COLS + 2) {
@@ -331,9 +339,9 @@
             // Draw sun in top right corner
             drawSun();
 
-            // Draw player (chicken) with camera offset
-            const playerScreenY = (player.worldY - cameraY) * GRID_SIZE;
-            drawChicken(player.x * GRID_SIZE + GRID_SIZE / 2, playerScreenY + GRID_SIZE / 2);
+            // Draw player (chicken) with camera offset using smooth render positions
+            const playerScreenY = (player.renderWorldY - cameraY) * GRID_SIZE;
+            drawChicken(player.renderX * GRID_SIZE + GRID_SIZE / 2, playerScreenY + GRID_SIZE / 2);
         }
 
         // Draw 3D road with perspective
@@ -1131,6 +1139,8 @@
             player.x = Math.floor(COLS / 2);
             player.y = ROWS - 2;
             player.worldY = ROWS - 2;
+            player.renderX = Math.floor(COLS / 2);
+            player.renderWorldY = ROWS - 2;
             cars = [];
             roads = [];
             cameraY = ROWS - 2 - (ROWS - 5);
@@ -1147,16 +1157,20 @@
             updateScoreDisplay();
         }
 
-        // Game loop
-        function gameLoop() {
-            update();
+        // Game loop with delta time for smooth 60fps
+        let lastTime = performance.now();
+        function gameLoop(currentTime) {
+            const deltaTime = currentTime - lastTime;
+            lastTime = currentTime;
+
+            update(deltaTime);
             draw();
             requestAnimationFrame(gameLoop);
         }
 
         // Start game
         init();
-        gameLoop();
+        requestAnimationFrame(gameLoop);
     </script>
 </body>
 </html>
