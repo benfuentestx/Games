@@ -119,6 +119,159 @@
             to { transform: translate(-50%, -50%) scale(1.05); }
         }
 
+        .settings-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .settings-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: rotate(90deg) scale(1.1);
+        }
+
+        .settings-btn.hidden {
+            display: none;
+        }
+
+        .settings-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10003;
+            overflow-y: auto;
+        }
+
+        .settings-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .settings-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .settings-content h2 {
+            color: white;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 2em;
+        }
+
+        .settings-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .settings-section h3 {
+            color: white;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .setting-item {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .setting-item label {
+            color: white;
+            font-size: 1em;
+            flex: 1;
+        }
+
+        .setting-item input[type="number"],
+        .setting-item input[type="range"] {
+            width: 100px;
+            padding: 5px;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.9);
+            margin-left: 10px;
+        }
+
+        .setting-item .range-value {
+            color: white;
+            min-width: 50px;
+            text-align: right;
+            font-weight: bold;
+        }
+
+        .settings-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .settings-buttons button {
+            flex: 1;
+            padding: 12px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-save {
+            background: #4ECDC4;
+            color: white;
+        }
+
+        .btn-save:hover {
+            background: #45b7af;
+            transform: scale(1.05);
+        }
+
+        .btn-cancel {
+            background: #FF6B6B;
+            color: white;
+        }
+
+        .btn-cancel:hover {
+            background: #ff5252;
+            transform: scale(1.05);
+        }
+
+        .btn-reset {
+            background: #FFA07A;
+            color: white;
+        }
+
+        .btn-reset:hover {
+            background: #ff8c61;
+            transform: scale(1.05);
+        }
+
         .controls {
             margin-top: 15px;
             color: white;
@@ -256,6 +409,7 @@
 <body>
     <div class="game-container">
         <h1>🐔 Crossy Road</h1>
+        <button class="settings-btn" id="settingsBtn" onclick="openSettings()">⚙️</button>
         <div class="score-board">
             <div class="score-item">
                 <div>High Score: <span id="highScore">0</span></div>
@@ -285,6 +439,87 @@
 
     <button class="exit-fullscreen-btn" id="exitFullscreenBtn" onclick="exitFullscreen()">✕ Exit Fullscreen</button>
 
+    <!-- Settings Modal -->
+    <div class="settings-modal" id="settingsModal">
+        <div class="settings-content">
+            <h2>⚙️ Game Settings</h2>
+
+            <div class="settings-section">
+                <h3>🚗 Vehicle Settings</h3>
+                <div class="setting-item">
+                    <label>Vehicle Density (Min):</label>
+                    <input type="number" id="vehicleDensityMin" min="1" max="5" value="1">
+                </div>
+                <div class="setting-item">
+                    <label>Vehicle Density (Max):</label>
+                    <input type="number" id="vehicleDensityMax" min="1" max="5" value="2">
+                </div>
+                <div class="setting-item">
+                    <label>Vehicle Speed (Min):</label>
+                    <input type="number" id="vehicleSpeedMin" min="0.01" max="0.1" step="0.01" value="0.02">
+                </div>
+                <div class="setting-item">
+                    <label>Vehicle Speed (Max):</label>
+                    <input type="number" id="vehicleSpeedMax" min="0.01" max="0.1" step="0.01" value="0.05">
+                </div>
+                <div class="setting-item">
+                    <label>Road Frequency (Every X rows):</label>
+                    <input type="number" id="vehicleSpawnFrequency" min="2" max="10" value="3">
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3>✈️ Flight Power-Up</h3>
+                <div class="setting-item">
+                    <label>Coins Required for Flight:</label>
+                    <input type="number" id="coinsForFlight" min="1" max="20" value="5">
+                </div>
+                <div class="setting-item">
+                    <label>Flight Duration (seconds):</label>
+                    <input type="number" id="flightDuration" min="1" max="20" step="0.5" value="5">
+                </div>
+                <div class="setting-item">
+                    <label>Flight Movement Delay (ms):</label>
+                    <input type="number" id="flightMovementDelay" min="50" max="500" step="50" value="150">
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3>🪙 Coin Settings</h3>
+                <div class="setting-item">
+                    <label>Coin Spawn Min (jumps):</label>
+                    <input type="number" id="coinSpawnMin" min="1" max="20" value="5">
+                </div>
+                <div class="setting-item">
+                    <label>Coin Spawn Max (jumps):</label>
+                    <input type="number" id="coinSpawnMax" min="5" max="30" value="18">
+                </div>
+                <div class="setting-item">
+                    <label>Coin Distance Min (rows ahead):</label>
+                    <input type="number" id="coinSpawnDistanceMin" min="2" max="20" value="8">
+                </div>
+                <div class="setting-item">
+                    <label>Coin Distance Max (rows ahead):</label>
+                    <input type="number" id="coinSpawnDistanceMax" min="5" max="30" value="12">
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3>🎮 Game Difficulty</h3>
+                <div class="setting-item">
+                    <label>Win Score:</label>
+                    <input type="number" id="winScore" min="50" max="1000" step="50" value="333">
+                </div>
+            </div>
+
+            <div class="settings-buttons">
+                <button class="btn-save" onclick="saveSettingsFromModal()">Save</button>
+                <button class="btn-reset" onclick="resetSettings()">Reset to Default</button>
+                <button class="btn-cancel" onclick="closeSettings()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -293,6 +528,57 @@
         const GRID_SIZE = 50; // Increased from 40 to 50 for more zoom
         const COLS = canvas.width / GRID_SIZE;
         const ROWS = canvas.height / GRID_SIZE;
+
+        // Game Settings (configurable) - MUST BE DEFINED FIRST
+        let gameSettings = {
+            // Vehicle settings
+            vehicleDensityMin: 1,
+            vehicleDensityMax: 2,
+            vehicleSpeedMin: 0.02,
+            vehicleSpeedMax: 0.05,
+            vehicleSpawnFrequency: 3, // Every X rows
+
+            // Flight power-up settings
+            coinsForFlight: 5,
+            flightDuration: 5000, // milliseconds
+            flightMovementDelay: 150, // milliseconds between moves when flying
+
+            // Coin settings
+            coinSpawnMin: 5,
+            coinSpawnMax: 18,
+            coinSpawnDistanceMin: 8,
+            coinSpawnDistanceMax: 12,
+
+            // Game difficulty
+            winScore: 333,
+            gridSize: 50,
+
+            // Animation settings
+            hopSpeed: 0.008,
+            hopHeight: 15,
+            cameraSmoothing: 0.15
+        };
+
+        // Load settings from localStorage
+        function loadSettings() {
+            const saved = localStorage.getItem('crossyRoadSettings');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    gameSettings = { ...gameSettings, ...parsed };
+                } catch (e) {
+                    console.error('Failed to load settings:', e);
+                }
+            }
+        }
+
+        // Save settings to localStorage
+        function saveSettings() {
+            localStorage.setItem('crossyRoadSettings', JSON.stringify(gameSettings));
+        }
+
+        // Load settings on startup
+        loadSettings();
 
         // Game state
         let gameOver = false;
@@ -306,13 +592,12 @@
         // Coin system
         let coins = 0;
         let coinObjects = []; // Array to store coin positions
-        let nextCoinSpawn = Math.floor(Math.random() * 14) + 5; // Random between 5-18 jumps
+        let nextCoinSpawn = Math.floor(Math.random() * (gameSettings.coinSpawnMax - gameSettings.coinSpawnMin + 1)) + gameSettings.coinSpawnMin;
 
         // Flight system
         let isFlying = false;
         let flightTimeRemaining = 0;
-        const FLIGHT_DURATION = 5000; // 5 seconds in milliseconds
-        const COINS_FOR_FLIGHT = 5;
+        let lastMoveTime = 0; // Track last movement time for flight speed limit
 
         // Player
         let player = {
@@ -335,7 +620,7 @@
         function init() {
             // Create initial roads (every other row is a road)
             for (let row = 0; row < ROWS; row++) {
-                if (row % 3 === 0 && row !== ROWS - 2) {
+                if (row % gameSettings.vehicleSpawnFrequency === 0 && row !== ROWS - 2) {
                     roads.push({
                         row: row,
                         direction: Math.random() > 0.5 ? 1 : -1
@@ -345,14 +630,15 @@
 
             // Create initial cars
             roads.forEach(road => {
-                const numCars = Math.floor(Math.random() * 2) + 1;
+                const numCars = Math.floor(Math.random() * (gameSettings.vehicleDensityMax - gameSettings.vehicleDensityMin + 1)) + gameSettings.vehicleDensityMin;
                 for (let i = 0; i < numCars; i++) {
                     const vehicleType = getRandomVehicleType();
+                    const speedRange = gameSettings.vehicleSpeedMax - gameSettings.vehicleSpeedMin;
                     cars.push({
                         x: Math.random() * COLS,
                         y: road.row,
                         width: vehicleType.width,
-                        speed: (Math.random() * 0.03 + 0.02) * road.direction,
+                        speed: (Math.random() * speedRange + gameSettings.vehicleSpeedMin) * road.direction,
                         color: getRandomCarColor(),
                         type: vehicleType.type
                     });
@@ -368,7 +654,7 @@
 
             // Generate roads ahead of the camera (going into negative rows)
             while (minRowGenerated > currentTopRow - 10) {
-                if (minRowGenerated % 3 === 0 && minRowGenerated !== startingWorldY) {
+                if (minRowGenerated % gameSettings.vehicleSpawnFrequency === 0 && minRowGenerated !== startingWorldY) {
                     const newRoad = {
                         row: minRowGenerated,
                         direction: Math.random() > 0.5 ? 1 : -1
@@ -376,14 +662,15 @@
                     roads.push(newRoad);
 
                     // Add cars to the new road
-                    const numCars = Math.floor(Math.random() * 2) + 1;
+                    const numCars = Math.floor(Math.random() * (gameSettings.vehicleDensityMax - gameSettings.vehicleDensityMin + 1)) + gameSettings.vehicleDensityMin;
                     for (let i = 0; i < numCars; i++) {
                         const vehicleType = getRandomVehicleType();
+                        const speedRange = gameSettings.vehicleSpeedMax - gameSettings.vehicleSpeedMin;
                         cars.push({
                             x: Math.random() * COLS,
                             y: newRoad.row,
                             width: vehicleType.width,
-                            speed: (Math.random() * 0.03 + 0.02) * newRoad.direction,
+                            speed: (Math.random() * speedRange + gameSettings.vehicleSpeedMin) * newRoad.direction,
                             color: getRandomCarColor(),
                             type: vehicleType.type
                         });
@@ -490,9 +777,9 @@
                     coins++;
 
                     // Check if player has collected enough coins for flight
-                    if (coins >= COINS_FOR_FLIGHT && !isFlying) {
+                    if (coins >= gameSettings.coinsForFlight && !isFlying) {
                         isFlying = true;
-                        flightTimeRemaining = FLIGHT_DURATION;
+                        flightTimeRemaining = gameSettings.flightDuration;
                         coins = 0; // Reset coins after activating flight
                     }
 
@@ -1388,12 +1675,19 @@
         document.addEventListener('keydown', (e) => {
             if (gameOver) return;
 
+            // Check flight movement delay
+            if (isFlying && Date.now() - lastMoveTime < gameSettings.flightMovementDelay) {
+                e.preventDefault();
+                return; // Prevent movement if too soon during flight
+            }
+
             switch(e.key) {
                 case 'ArrowUp':
                     e.preventDefault();
                     player.worldY--;
                     player.isHopping = true;
                     player.hopProgress = 0;
+                    if (isFlying) lastMoveTime = Date.now();
                     // Update max progress
                     if (player.worldY < maxWorldY) {
                         maxWorldY = player.worldY;
@@ -1401,16 +1695,18 @@
                         // Check if it's time to spawn a coin
                         if (score === nextCoinSpawn) {
                             // Spawn coin at a random x position further ahead
+                            const distanceRange = gameSettings.coinSpawnDistanceMax - gameSettings.coinSpawnDistanceMin;
                             coinObjects.push({
                                 x: Math.floor(Math.random() * COLS),
-                                y: player.worldY - Math.floor(Math.random() * 5 + 8), // Spawn 8-12 rows ahead
+                                y: player.worldY - Math.floor(Math.random() * distanceRange + gameSettings.coinSpawnDistanceMin),
                                 collected: false
                             });
-                            // Set next coin spawn (5-18 jumps from now)
-                            nextCoinSpawn = score + Math.floor(Math.random() * 14) + 5;
+                            // Set next coin spawn
+                            const spawnRange = gameSettings.coinSpawnMax - gameSettings.coinSpawnMin;
+                            nextCoinSpawn = score + Math.floor(Math.random() * spawnRange) + gameSettings.coinSpawnMin;
                         }
-                        // Check for win condition at score 333
-                        if (score >= 333) {
+                        // Check for win condition
+                        if (score >= gameSettings.winScore) {
                             winGame();
                         }
                     }
@@ -1423,6 +1719,7 @@
                         player.worldY++;
                         player.isHopping = true;
                         player.hopProgress = 0;
+                        if (isFlying) lastMoveTime = Date.now();
                         updateScoreDisplay();
                     }
                     break;
@@ -1432,6 +1729,7 @@
                         player.x--;
                         player.isHopping = true;
                         player.hopProgress = 0;
+                        if (isFlying) lastMoveTime = Date.now();
                     }
                     break;
                 case 'ArrowRight':
@@ -1440,6 +1738,7 @@
                         player.x++;
                         player.isHopping = true;
                         player.hopProgress = 0;
+                        if (isFlying) lastMoveTime = Date.now();
                     }
                     break;
             }
@@ -1484,9 +1783,13 @@
             score = 0;
             coins = 0;
             coinObjects = [];
-            nextCoinSpawn = Math.floor(Math.random() * 14) + 5;
+            const spawnRange = gameSettings.coinSpawnMax - gameSettings.coinSpawnMin;
+            nextCoinSpawn = Math.floor(Math.random() * spawnRange) + gameSettings.coinSpawnMin;
             isFlying = false;
             flightTimeRemaining = 0;
+            lastMoveTime = 0;
+            gameStarted = false;
+            document.getElementById('settingsBtn').classList.remove('hidden');
             document.getElementById('flightDisplay').classList.remove('active');
             player.x = Math.floor(COLS / 2);
             player.y = ROWS - 2;
@@ -1603,6 +1906,89 @@
         document.addEventListener('webkitfullscreenchange', () => {
             if (!document.webkitFullscreenElement) {
                 exitFullscreen();
+            }
+        });
+
+        // Settings Modal Functions
+        function openSettings() {
+            document.getElementById('settingsModal').classList.add('active');
+            loadSettingsToModal();
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.remove('active');
+        }
+
+        function loadSettingsToModal() {
+            document.getElementById('vehicleDensityMin').value = gameSettings.vehicleDensityMin;
+            document.getElementById('vehicleDensityMax').value = gameSettings.vehicleDensityMax;
+            document.getElementById('vehicleSpeedMin').value = gameSettings.vehicleSpeedMin;
+            document.getElementById('vehicleSpeedMax').value = gameSettings.vehicleSpeedMax;
+            document.getElementById('vehicleSpawnFrequency').value = gameSettings.vehicleSpawnFrequency;
+            document.getElementById('coinsForFlight').value = gameSettings.coinsForFlight;
+            document.getElementById('flightDuration').value = gameSettings.flightDuration / 1000; // Convert to seconds
+            document.getElementById('flightMovementDelay').value = gameSettings.flightMovementDelay;
+            document.getElementById('coinSpawnMin').value = gameSettings.coinSpawnMin;
+            document.getElementById('coinSpawnMax').value = gameSettings.coinSpawnMax;
+            document.getElementById('coinSpawnDistanceMin').value = gameSettings.coinSpawnDistanceMin;
+            document.getElementById('coinSpawnDistanceMax').value = gameSettings.coinSpawnDistanceMax;
+            document.getElementById('winScore').value = gameSettings.winScore;
+        }
+
+        function saveSettingsFromModal() {
+            gameSettings.vehicleDensityMin = parseInt(document.getElementById('vehicleDensityMin').value);
+            gameSettings.vehicleDensityMax = parseInt(document.getElementById('vehicleDensityMax').value);
+            gameSettings.vehicleSpeedMin = parseFloat(document.getElementById('vehicleSpeedMin').value);
+            gameSettings.vehicleSpeedMax = parseFloat(document.getElementById('vehicleSpeedMax').value);
+            gameSettings.vehicleSpawnFrequency = parseInt(document.getElementById('vehicleSpawnFrequency').value);
+            gameSettings.coinsForFlight = parseInt(document.getElementById('coinsForFlight').value);
+            gameSettings.flightDuration = parseFloat(document.getElementById('flightDuration').value) * 1000; // Convert to ms
+            gameSettings.flightMovementDelay = parseInt(document.getElementById('flightMovementDelay').value);
+            gameSettings.coinSpawnMin = parseInt(document.getElementById('coinSpawnMin').value);
+            gameSettings.coinSpawnMax = parseInt(document.getElementById('coinSpawnMax').value);
+            gameSettings.coinSpawnDistanceMin = parseInt(document.getElementById('coinSpawnDistanceMin').value);
+            gameSettings.coinSpawnDistanceMax = parseInt(document.getElementById('coinSpawnDistanceMax').value);
+            gameSettings.winScore = parseInt(document.getElementById('winScore').value);
+
+            saveSettings();
+            closeSettings();
+            alert('Settings saved! Restart the game for changes to take effect.');
+        }
+
+        function resetSettings() {
+            if (confirm('Reset all settings to default values?')) {
+                gameSettings = {
+                    vehicleDensityMin: 1,
+                    vehicleDensityMax: 2,
+                    vehicleSpeedMin: 0.02,
+                    vehicleSpeedMax: 0.05,
+                    vehicleSpawnFrequency: 3,
+                    coinsForFlight: 5,
+                    flightDuration: 5000,
+                    flightMovementDelay: 150,
+                    coinSpawnMin: 5,
+                    coinSpawnMax: 18,
+                    coinSpawnDistanceMin: 8,
+                    coinSpawnDistanceMax: 12,
+                    winScore: 333,
+                    gridSize: 50,
+                    hopSpeed: 0.008,
+                    hopHeight: 15,
+                    cameraSmoothing: 0.15
+                };
+                saveSettings();
+                loadSettingsToModal();
+                alert('Settings reset to defaults!');
+            }
+        }
+
+        // Hide settings button once game starts
+        let gameStarted = false;
+        const originalKeydownHandler = document.addEventListener;
+        document.addEventListener('keydown', (e) => {
+            if (!gameStarted && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                gameStarted = true;
+                document.getElementById('settingsBtn').classList.add('hidden');
             }
         });
 
