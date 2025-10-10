@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crossy Road - Simple Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Arial', sans-serif;
+        }
+
+        .game-container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: white;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 15px;
+            color: white;
+            font-size: 1.2em;
+        }
+
+        .score-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 20px;
+            border-radius: 8px;
+        }
+
+        canvas {
+            border: 4px solid white;
+            border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+            background: #87CEEB;
+        }
+
+        .controls {
+            margin-top: 15px;
+            color: white;
+            font-size: 0.9em;
+        }
+
+        .game-over {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            z-index: 1000;
+        }
+
+        .game-over h2 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: #ff6b6b;
+        }
+
+        .game-over button {
+            margin-top: 20px;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .game-over button:hover {
+            background: #764ba2;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🐔 Crossy Road</h1>
+        <div class="score-board">
+            <div class="score-item">
+                <div>Score: <span id="score">0</span></div>
+            </div>
+            <div class="score-item">
+                <div>High Score: <span id="highScore">0</span></div>
+            </div>
+        </div>
+        <canvas id="gameCanvas" width="600" height="600"></canvas>
+        <div class="controls">
+            <p>🎮 Use Arrow Keys to Move</p>
+            <p>↑ Up | ↓ Down | ← Left | → Right</p>
+        </div>
+    </div>
+
+    <div class="game-over" id="gameOver">
+        <h2>GAME OVER!</h2>
+        <p style="font-size: 1.5em;">Final Score: <span id="finalScore">0</span></p>
+        <p style="font-size: 1.2em; margin-top: 10px;">High Score: <span id="finalHighScore">0</span></p>
+        <button onclick="restartGame()">Play Again</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Game constants
+        const GRID_SIZE = 40;
+        const COLS = canvas.width / GRID_SIZE;
+        const ROWS = canvas.height / GRID_SIZE;
+
+        // Game state
+        let gameOver = false;
+        let score = 0;
+        let highScore = localStorage.getItem('crossyRoadHighScore') || 0;
+
+        // Player
+        let player = {
+            x: Math.floor(COLS / 2),
+            y: ROWS - 2,
+            color: '#FFD700'
+        };
+
+        // Roads and cars
+        let roads = [];
+        let cars = [];
+
+        // Initialize game
+        function init() {
+            // Create roads (every other row is a road)
+            for (let row = 0; row < ROWS; row++) {
+                if (row % 3 === 0 && row !== ROWS - 2) {
+                    roads.push({
+                        row: row,
+                        direction: Math.random() > 0.5 ? 1 : -1
+                    });
+                }
+            }
+
+            // Create initial cars
+            roads.forEach(road => {
+                const numCars = Math.floor(Math.random() * 2) + 1;
+                for (let i = 0; i < numCars; i++) {
+                    cars.push({
+                        x: Math.random() * COLS,
+                        y: road.row,
+                        width: Math.random() > 0.5 ? 2 : 1,
+                        speed: (Math.random() * 0.03 + 0.02) * road.direction,
+                        color: getRandomCarColor()
+                    });
+                }
+            });
+
+            updateScoreDisplay();
+        }
+
+        function getRandomCarColor() {
+            const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        // Update game
+        function update() {
+            if (gameOver) return;
+
+            // Move cars
+            cars.forEach(car => {
+                car.x += car.speed;
+
+                // Wrap around
+                if (car.speed > 0 && car.x > COLS + 2) {
+                    car.x = -car.width - 2;
+                } else if (car.speed < 0 && car.x < -car.width - 2) {
+                    car.x = COLS + 2;
+                }
+            });
+
+            // Check collision
+            checkCollision();
+        }
+
+        // Draw game
+        function draw() {
+            // Clear canvas
+            ctx.fillStyle = '#87CEEB';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw grass and roads
+            for (let row = 0; row < ROWS; row++) {
+                const isRoad = roads.some(road => road.row === row);
+                if (isRoad) {
+                    ctx.fillStyle = '#404040';
+                    ctx.fillRect(0, row * GRID_SIZE, canvas.width, GRID_SIZE);
+
+                    // Road lines
+                    ctx.strokeStyle = '#FFD700';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([10, 10]);
+                    ctx.beginPath();
+                    ctx.moveTo(0, row * GRID_SIZE + GRID_SIZE / 2);
+                    ctx.lineTo(canvas.width, row * GRID_SIZE + GRID_SIZE / 2);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                } else {
+                    ctx.fillStyle = '#90EE90';
+                    ctx.fillRect(0, row * GRID_SIZE, canvas.width, GRID_SIZE);
+                }
+            }
+
+            // Draw cars
+            cars.forEach(car => {
+                ctx.fillStyle = car.color;
+                ctx.fillRect(
+                    car.x * GRID_SIZE + 2,
+                    car.y * GRID_SIZE + 5,
+                    car.width * GRID_SIZE - 4,
+                    GRID_SIZE - 10
+                );
+
+                // Car windows
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.fillRect(
+                    car.x * GRID_SIZE + 8,
+                    car.y * GRID_SIZE + 10,
+                    car.width * GRID_SIZE - 16,
+                    GRID_SIZE - 20
+                );
+            });
+
+            // Draw player
+            ctx.fillStyle = player.color;
+            ctx.beginPath();
+            ctx.arc(
+                player.x * GRID_SIZE + GRID_SIZE / 2,
+                player.y * GRID_SIZE + GRID_SIZE / 2,
+                GRID_SIZE / 2 - 4,
+                0,
+                Math.PI * 2
+            );
+            ctx.fill();
+
+            // Draw player eyes
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(
+                player.x * GRID_SIZE + GRID_SIZE / 2 - 8,
+                player.y * GRID_SIZE + GRID_SIZE / 2 - 5,
+                3,
+                0,
+                Math.PI * 2
+            );
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(
+                player.x * GRID_SIZE + GRID_SIZE / 2 + 8,
+                player.y * GRID_SIZE + GRID_SIZE / 2 - 5,
+                3,
+                0,
+                Math.PI * 2
+            );
+            ctx.fill();
+        }
+
+        // Check collision
+        function checkCollision() {
+            cars.forEach(car => {
+                if (Math.floor(car.y) === player.y) {
+                    const carLeft = car.x;
+                    const carRight = car.x + car.width;
+                    const playerPos = player.x + 0.5;
+
+                    if (playerPos >= carLeft && playerPos <= carRight) {
+                        endGame();
+                    }
+                }
+            });
+        }
+
+        // Handle keyboard input
+        document.addEventListener('keydown', (e) => {
+            if (gameOver) return;
+
+            switch(e.key) {
+                case 'ArrowUp':
+                    e.preventDefault();
+                    if (player.y > 0) {
+                        player.y--;
+                        score++;
+                        updateScoreDisplay();
+                    }
+                    break;
+                case 'ArrowDown':
+                    e.preventDefault();
+                    if (player.y < ROWS - 1) {
+                        player.y++;
+                        if (score > 0) score--;
+                        updateScoreDisplay();
+                    }
+                    break;
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    if (player.x > 0) {
+                        player.x--;
+                    }
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    if (player.x < COLS - 1) {
+                        player.x++;
+                    }
+                    break;
+            }
+        });
+
+        function updateScoreDisplay() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('highScore').textContent = highScore;
+        }
+
+        function endGame() {
+            gameOver = true;
+
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('crossyRoadHighScore', highScore);
+            }
+
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('finalHighScore').textContent = highScore;
+            document.getElementById('gameOver').style.display = 'block';
+        }
+
+        function restartGame() {
+            gameOver = false;
+            score = 0;
+            player.x = Math.floor(COLS / 2);
+            player.y = ROWS - 2;
+            cars = [];
+            roads = [];
+
+            document.getElementById('gameOver').style.display = 'none';
+
+            init();
+            updateScoreDisplay();
+        }
+
+        // Game loop
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Start game
+        init();
+        gameLoop();
+    </script>
+</body>
+</html>
