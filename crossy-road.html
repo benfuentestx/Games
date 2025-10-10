@@ -505,6 +505,22 @@
             </div>
 
             <div class="settings-section">
+                <h3>🐺 Wolf Chase</h3>
+                <div class="setting-item">
+                    <label>Wolf Wait Time (seconds):</label>
+                    <input type="number" id="wolfChaseDelay" min="1" max="10" step="0.5" value="3">
+                </div>
+                <div class="setting-item">
+                    <label>Wolf Speed (jumps/second):</label>
+                    <input type="number" id="wolfSpeed" min="0.5" max="5" step="0.1" value="2">
+                </div>
+                <div class="setting-item">
+                    <label>Wolf Spawn Distance (rows behind):</label>
+                    <input type="number" id="wolfSpawnDistance" min="3" max="15" step="1" value="5">
+                </div>
+            </div>
+
+            <div class="settings-section">
                 <h3>🎮 Game Difficulty</h3>
                 <div class="setting-item">
                     <label>Win Score:</label>
@@ -556,7 +572,12 @@
             // Animation settings
             hopSpeed: 0.008,
             hopHeight: 15,
-            cameraSmoothing: 0.15
+            cameraSmoothing: 0.15,
+
+            // Wolf chase settings
+            wolfChaseDelay: 3000, // milliseconds before wolf starts chasing
+            wolfSpeed: 2, // jumps per second
+            wolfSpawnDistance: 5 // rows behind chicken when teleporting
         };
 
         // Load settings from localStorage
@@ -598,6 +619,11 @@
         let isFlying = false;
         let flightTimeRemaining = 0;
         let lastMoveTime = 0; // Track last movement time for flight speed limit
+
+        // Wolf chase system
+        let wolfWorldY = ROWS - 1; // Wolf's actual world Y position (starts at bottom of initial screen)
+        let timeSinceLastForwardMove = 0;
+        let wolfChasing = false;
 
         // Player
         let player = {
@@ -723,6 +749,39 @@
                     // Update flight timer display
                     document.getElementById('flightTime').textContent = (flightTimeRemaining / 1000).toFixed(1);
                     document.getElementById('flightDisplay').classList.add('active');
+                }
+            }
+
+            // Update wolf chase timer when not chasing
+            if (!wolfChasing) {
+                timeSinceLastForwardMove += deltaTime;
+
+                // If timer expires, teleport wolf behind chicken and start chasing
+                if (timeSinceLastForwardMove >= gameSettings.wolfChaseDelay) {
+                    wolfWorldY = player.worldY + gameSettings.wolfSpawnDistance;
+                    wolfChasing = true;
+                    timeSinceLastForwardMove = 0;
+                }
+            }
+
+            // Once wolf starts chasing, he moves forward in world space
+            if (wolfChasing) {
+                // Wolf moves forward (decreasing worldY) at configured jumps per second
+                const wolfMovement = (gameSettings.wolfSpeed / 1000) * deltaTime;
+                wolfWorldY -= wolfMovement;
+
+                // Check if wolf caught the chicken
+                if (wolfWorldY <= player.worldY) {
+                    endGame();
+                }
+
+                // Check if chicken has moved far enough forward to outpace the wolf
+                // Wolf stops chasing when chicken gets far enough ahead
+                const distanceBehind = wolfWorldY - player.worldY;
+                if (distanceBehind > gameSettings.wolfSpawnDistance * 2) {
+                    // Chicken escaped - wolf stops chasing and timer resets
+                    wolfChasing = false;
+                    timeSinceLastForwardMove = 0;
                 }
             }
 
@@ -866,6 +925,14 @@
                     }
                 }
             });
+
+            // Draw wolf chasing from behind
+            // Wolf has his own world Y position and moves forward in world space
+            const wolfScreenY = (wolfWorldY - cameraY) * GRID_SIZE;
+            // Only draw if wolf is on screen
+            if (wolfScreenY >= -GRID_SIZE && wolfScreenY <= canvas.height + GRID_SIZE) {
+                drawWolf(player.renderX * GRID_SIZE + GRID_SIZE / 2, wolfScreenY + GRID_SIZE / 2);
+            }
 
             // Draw player (chicken) with camera offset using smooth render positions and hop offset
             const playerScreenY = (player.renderWorldY - cameraY) * GRID_SIZE;
@@ -1572,6 +1639,171 @@
             ctx.stroke();
         }
 
+        // Draw a scary grey wolf/dog
+        function drawWolf(x, y) {
+            const size = GRID_SIZE / 2 - 2;
+
+            // Shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.beginPath();
+            ctx.ellipse(x, y + size + 2, size * 1.2, size * 0.4, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Body (dark grey)
+            const bodyGradient = ctx.createRadialGradient(x - 3, y, 2, x, y + 2, size);
+            bodyGradient.addColorStop(0, '#5a5a5a');
+            bodyGradient.addColorStop(0.6, '#3a3a3a');
+            bodyGradient.addColorStop(1, '#2a2a2a');
+            ctx.fillStyle = bodyGradient;
+            ctx.beginPath();
+            ctx.ellipse(x, y + 4, size * 1.1, size * 1.0, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Back fur ridge (spiky)
+            ctx.fillStyle = '#4a4a4a';
+            for (let i = 0; i < 5; i++) {
+                ctx.beginPath();
+                ctx.moveTo(x - size * 0.6 + i * size * 0.3, y);
+                ctx.lineTo(x - size * 0.5 + i * size * 0.3, y - size * 0.3);
+                ctx.lineTo(x - size * 0.4 + i * size * 0.3, y);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            // Tail (bushy)
+            ctx.fillStyle = '#3a3a3a';
+            ctx.beginPath();
+            ctx.moveTo(x - size * 0.9, y + size * 0.2);
+            ctx.quadraticCurveTo(x - size * 1.5, y - size * 0.3, x - size * 1.3, y + size * 0.5);
+            ctx.quadraticCurveTo(x - size * 1.4, y + size * 0.2, x - size * 0.9, y + size * 0.4);
+            ctx.closePath();
+            ctx.fill();
+
+            // Head (menacing)
+            const headGradient = ctx.createRadialGradient(x + size * 0.4, y - size * 0.5, 2, x + size * 0.5, y - size * 0.4, size * 0.6);
+            headGradient.addColorStop(0, '#5a5a5a');
+            headGradient.addColorStop(0.7, '#3a3a3a');
+            headGradient.addColorStop(1, '#2a2a2a');
+            ctx.fillStyle = headGradient;
+            ctx.beginPath();
+            ctx.ellipse(x + size * 0.5, y - size * 0.4, size * 0.6, size * 0.5, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Snout
+            ctx.fillStyle = '#4a4a4a';
+            ctx.beginPath();
+            ctx.ellipse(x + size * 0.9, y - size * 0.3, size * 0.35, size * 0.25, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Nose (black)
+            ctx.fillStyle = '#000000';
+            ctx.beginPath();
+            ctx.arc(x + size * 1.1, y - size * 0.35, size * 0.12, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Ears (pointed)
+            ctx.fillStyle = '#3a3a3a';
+            ctx.beginPath();
+            ctx.moveTo(x + size * 0.3, y - size * 0.7);
+            ctx.lineTo(x + size * 0.2, y - size * 1.1);
+            ctx.lineTo(x + size * 0.4, y - size * 0.8);
+            ctx.closePath();
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(x + size * 0.6, y - size * 0.7);
+            ctx.lineTo(x + size * 0.65, y - size * 1.15);
+            ctx.lineTo(x + size * 0.7, y - size * 0.8);
+            ctx.closePath();
+            ctx.fill();
+
+            // Eyes (red glowing)
+            ctx.fillStyle = '#ff0000';
+            ctx.shadowColor = '#ff0000';
+            ctx.shadowBlur = 5;
+            ctx.beginPath();
+            ctx.arc(x + size * 0.55, y - size * 0.5, size * 0.1, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + size * 0.75, y - size * 0.5, size * 0.1, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Eye pupils (black)
+            ctx.fillStyle = '#000000';
+            ctx.beginPath();
+            ctx.arc(x + size * 0.57, y - size * 0.5, size * 0.05, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + size * 0.77, y - size * 0.5, size * 0.05, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Mouth (snarling)
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(x + size * 0.8, y - size * 0.2);
+            ctx.quadraticCurveTo(x + size * 0.9, y - size * 0.1, x + size * 1.0, y - size * 0.15);
+            ctx.stroke();
+
+            // Teeth (sharp and scary)
+            ctx.fillStyle = '#ffffff';
+            // Upper teeth
+            for (let i = 0; i < 4; i++) {
+                ctx.beginPath();
+                ctx.moveTo(x + size * (0.85 + i * 0.08), y - size * 0.15);
+                ctx.lineTo(x + size * (0.83 + i * 0.08), y - size * 0.05);
+                ctx.lineTo(x + size * (0.87 + i * 0.08), y - size * 0.15);
+                ctx.closePath();
+                ctx.fill();
+            }
+            // Lower teeth
+            for (let i = 0; i < 3; i++) {
+                ctx.beginPath();
+                ctx.moveTo(x + size * (0.88 + i * 0.08), y - size * 0.05);
+                ctx.lineTo(x + size * (0.86 + i * 0.08), y + size * 0.02);
+                ctx.lineTo(x + size * (0.90 + i * 0.08), y - size * 0.05);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            // Legs (muscular)
+            ctx.fillStyle = '#3a3a3a';
+            ctx.strokeStyle = '#2a2a2a';
+            ctx.lineWidth = 3;
+            // Front legs
+            ctx.beginPath();
+            ctx.moveTo(x + size * 0.3, y + size * 0.8);
+            ctx.lineTo(x + size * 0.3, y + size * 1.2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x + size * 0.6, y + size * 0.8);
+            ctx.lineTo(x + size * 0.6, y + size * 1.2);
+            ctx.stroke();
+            // Back legs
+            ctx.beginPath();
+            ctx.moveTo(x - size * 0.2, y + size * 0.8);
+            ctx.lineTo(x - size * 0.2, y + size * 1.2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x - size * 0.5, y + size * 0.8);
+            ctx.lineTo(x - size * 0.5, y + size * 1.2);
+            ctx.stroke();
+
+            // Claws
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 1;
+            for (let leg of [x + size * 0.3, x + size * 0.6, x - size * 0.2, x - size * 0.5]) {
+                ctx.beginPath();
+                ctx.moveTo(leg - 3, y + size * 1.2);
+                ctx.lineTo(leg - 5, y + size * 1.3);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(leg + 3, y + size * 1.2);
+                ctx.lineTo(leg + 5, y + size * 1.3);
+                ctx.stroke();
+            }
+        }
+
         // Draw sun in top right corner
         function drawSun() {
             const sunX = canvas.width - 60;
@@ -1692,6 +1924,10 @@
                     if (player.worldY < maxWorldY) {
                         maxWorldY = player.worldY;
                         score++;
+
+                        // Reset wolf timer when making forward progress
+                        timeSinceLastForwardMove = 0;
+
                         // Check if it's time to spawn a coin
                         if (score === nextCoinSpawn) {
                             // Spawn coin at a random x position further ahead
@@ -1788,6 +2024,9 @@
             isFlying = false;
             flightTimeRemaining = 0;
             lastMoveTime = 0;
+            wolfWorldY = ROWS - 1;
+            timeSinceLastForwardMove = 0;
+            wolfChasing = false;
             gameStarted = false;
             document.getElementById('settingsBtn').classList.remove('hidden');
             document.getElementById('flightDisplay').classList.remove('active');
@@ -1932,6 +2171,9 @@
             document.getElementById('coinSpawnMax').value = gameSettings.coinSpawnMax;
             document.getElementById('coinSpawnDistanceMin').value = gameSettings.coinSpawnDistanceMin;
             document.getElementById('coinSpawnDistanceMax').value = gameSettings.coinSpawnDistanceMax;
+            document.getElementById('wolfChaseDelay').value = gameSettings.wolfChaseDelay / 1000; // Convert to seconds
+            document.getElementById('wolfSpeed').value = gameSettings.wolfSpeed;
+            document.getElementById('wolfSpawnDistance').value = gameSettings.wolfSpawnDistance;
             document.getElementById('winScore').value = gameSettings.winScore;
         }
 
@@ -1948,6 +2190,9 @@
             gameSettings.coinSpawnMax = parseInt(document.getElementById('coinSpawnMax').value);
             gameSettings.coinSpawnDistanceMin = parseInt(document.getElementById('coinSpawnDistanceMin').value);
             gameSettings.coinSpawnDistanceMax = parseInt(document.getElementById('coinSpawnDistanceMax').value);
+            gameSettings.wolfChaseDelay = parseFloat(document.getElementById('wolfChaseDelay').value) * 1000; // Convert to ms
+            gameSettings.wolfSpeed = parseFloat(document.getElementById('wolfSpeed').value);
+            gameSettings.wolfSpawnDistance = parseInt(document.getElementById('wolfSpawnDistance').value);
             gameSettings.winScore = parseInt(document.getElementById('winScore').value);
 
             saveSettings();
@@ -1974,7 +2219,10 @@
                     gridSize: 50,
                     hopSpeed: 0.008,
                     hopHeight: 15,
-                    cameraSmoothing: 0.15
+                    cameraSmoothing: 0.15,
+                    wolfChaseDelay: 3000,
+                    wolfSpeed: 2,
+                    wolfSpawnDistance: 5
                 };
                 saveSettings();
                 loadSettingsToModal();
