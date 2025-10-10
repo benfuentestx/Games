@@ -622,6 +622,8 @@
 
         // Wolf chase system
         let wolfWorldY = ROWS - 1; // Wolf's actual world Y position (starts at bottom of initial screen)
+        let wolfX = Math.floor(COLS / 2); // Wolf's X position (smooth tracking)
+        let wolfRenderX = Math.floor(COLS / 2); // Wolf's smooth render X position
         let timeSinceLastForwardMove = 0;
         let wolfChasing = false;
 
@@ -759,6 +761,8 @@
                 // If timer expires, teleport wolf behind chicken and start chasing
                 if (timeSinceLastForwardMove >= gameSettings.wolfChaseDelay) {
                     wolfWorldY = player.worldY + gameSettings.wolfSpawnDistance;
+                    wolfX = player.x; // Start at player's X position
+                    wolfRenderX = player.x; // Initialize render position
                     wolfChasing = true;
                     timeSinceLastForwardMove = 0;
                 }
@@ -770,8 +774,12 @@
                 const wolfMovement = (gameSettings.wolfSpeed / 1000) * deltaTime;
                 wolfWorldY -= wolfMovement;
 
-                // Check if wolf caught the chicken
-                if (wolfWorldY <= player.worldY) {
+                // Wolf tracks player's X position with a delay (smooth lerp)
+                const wolfXLerpFactor = 0.05; // Lower = more delay/smoother
+                wolfX += (player.x - wolfX) * wolfXLerpFactor;
+
+                // Check if wolf caught the chicken (using actual positions)
+                if (wolfWorldY <= player.worldY && Math.abs(wolfX - player.x) < 0.5) {
                     endGame();
                 }
 
@@ -784,6 +792,10 @@
                     timeSinceLastForwardMove = 0;
                 }
             }
+
+            // Smooth wolf render position for drawing
+            const wolfRenderLerpFactor = 0.25;
+            wolfRenderX += (wolfX - wolfRenderX) * wolfRenderLerpFactor;
 
             // Update hopping animation (or flying animation)
             if (player.isHopping) {
@@ -927,11 +939,11 @@
             });
 
             // Draw wolf chasing from behind
-            // Wolf has his own world Y position and moves forward in world space
+            // Wolf has his own world Y position and X position (tracks with delay)
             const wolfScreenY = (wolfWorldY - cameraY) * GRID_SIZE;
             // Only draw if wolf is on screen
             if (wolfScreenY >= -GRID_SIZE && wolfScreenY <= canvas.height + GRID_SIZE) {
-                drawWolf(player.renderX * GRID_SIZE + GRID_SIZE / 2, wolfScreenY + GRID_SIZE / 2);
+                drawWolf(wolfRenderX * GRID_SIZE + GRID_SIZE / 2, wolfScreenY + GRID_SIZE / 2);
             }
 
             // Draw player (chicken) with camera offset using smooth render positions and hop offset
@@ -2025,6 +2037,8 @@
             flightTimeRemaining = 0;
             lastMoveTime = 0;
             wolfWorldY = ROWS - 1;
+            wolfX = Math.floor(COLS / 2);
+            wolfRenderX = Math.floor(COLS / 2);
             timeSinceLastForwardMove = 0;
             wolfChasing = false;
             gameStarted = false;
