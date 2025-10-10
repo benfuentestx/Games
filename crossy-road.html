@@ -253,60 +253,40 @@
 
         // Draw game
         function draw() {
-            // Clear canvas
-            ctx.fillStyle = '#87CEEB';
+            // Clear canvas with gradient sky
+            const skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            skyGradient.addColorStop(0, '#87CEEB');
+            skyGradient.addColorStop(1, '#B0E0E6');
+            ctx.fillStyle = skyGradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             // Calculate visible rows
             const startRow = Math.floor(cameraY);
             const endRow = startRow + ROWS + 1;
 
-            // Draw grass and roads with camera offset
+            // Draw grass and roads with 2.5D effect
             for (let worldRow = startRow; worldRow < endRow; worldRow++) {
                 const screenY = (worldRow - cameraY) * GRID_SIZE;
                 if (screenY < -GRID_SIZE || screenY > canvas.height) continue;
 
                 const isRoad = roads.some(road => road.row === worldRow);
                 if (isRoad) {
-                    ctx.fillStyle = '#404040';
-                    ctx.fillRect(0, screenY, canvas.width, GRID_SIZE);
-
-                    // Road lines
-                    ctx.strokeStyle = '#FFD700';
-                    ctx.lineWidth = 2;
-                    ctx.setLineDash([10, 10]);
-                    ctx.beginPath();
-                    ctx.moveTo(0, screenY + GRID_SIZE / 2);
-                    ctx.lineTo(canvas.width, screenY + GRID_SIZE / 2);
-                    ctx.stroke();
-                    ctx.setLineDash([]);
+                    draw3DRoad(screenY);
                 } else {
-                    ctx.fillStyle = '#90EE90';
-                    ctx.fillRect(0, screenY, canvas.width, GRID_SIZE);
+                    draw3DGrass(screenY);
                 }
             }
 
-            // Draw cars with camera offset
+            // Draw cars with camera offset and 2.5D effect
             cars.forEach(car => {
                 const screenY = (car.y - cameraY) * GRID_SIZE;
                 if (screenY < -GRID_SIZE || screenY > canvas.height) return;
 
-                ctx.fillStyle = car.color;
-                ctx.fillRect(
-                    car.x * GRID_SIZE + 2,
-                    screenY + 5,
-                    car.width * GRID_SIZE - 4,
-                    GRID_SIZE - 10
-                );
-
-                // Car windows
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-                ctx.fillRect(
-                    car.x * GRID_SIZE + 8,
-                    screenY + 10,
-                    car.width * GRID_SIZE - 16,
-                    GRID_SIZE - 20
-                );
+                if (car.width >= 2) {
+                    draw3DTruck(car.x * GRID_SIZE, screenY, car.width * GRID_SIZE, car.color, car.speed > 0);
+                } else {
+                    draw3DCar(car.x * GRID_SIZE, screenY, car.width * GRID_SIZE, car.color, car.speed > 0);
+                }
             });
 
             // Draw sun in top right corner
@@ -315,6 +295,265 @@
             // Draw player (chicken) with camera offset
             const playerScreenY = (player.worldY - cameraY) * GRID_SIZE;
             drawChicken(player.x * GRID_SIZE + GRID_SIZE / 2, playerScreenY + GRID_SIZE / 2);
+        }
+
+        // Draw 3D road with perspective
+        function draw3DRoad(y) {
+            // Base road
+            const roadGradient = ctx.createLinearGradient(0, y, 0, y + GRID_SIZE);
+            roadGradient.addColorStop(0, '#3a3a3a');
+            roadGradient.addColorStop(0.5, '#4a4a4a');
+            roadGradient.addColorStop(1, '#2a2a2a');
+            ctx.fillStyle = roadGradient;
+            ctx.fillRect(0, y, canvas.width, GRID_SIZE);
+
+            // Road edge highlights for 3D effect
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.fillRect(0, y, canvas.width, 2);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.fillRect(0, y + GRID_SIZE - 2, canvas.width, 2);
+
+            // Road lines with 3D appearance
+            ctx.strokeStyle = '#FFD700';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([15, 10]);
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+            ctx.shadowBlur = 2;
+            ctx.shadowOffsetY = 1;
+            ctx.beginPath();
+            ctx.moveTo(0, y + GRID_SIZE / 2);
+            ctx.lineTo(canvas.width, y + GRID_SIZE / 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetY = 0;
+        }
+
+        // Draw 3D grass with texture
+        function draw3DGrass(y) {
+            // Base grass with gradient
+            const grassGradient = ctx.createLinearGradient(0, y, 0, y + GRID_SIZE);
+            grassGradient.addColorStop(0, '#7CBA5C');
+            grassGradient.addColorStop(0.5, '#6FB34C');
+            grassGradient.addColorStop(1, '#5A9E3A');
+            ctx.fillStyle = grassGradient;
+            ctx.fillRect(0, y, canvas.width, GRID_SIZE);
+
+            // Grass texture (small strokes)
+            ctx.strokeStyle = 'rgba(90, 158, 58, 0.4)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < canvas.width; i += 8) {
+                if (Math.random() > 0.5) {
+                    ctx.beginPath();
+                    ctx.moveTo(i, y + Math.random() * GRID_SIZE);
+                    ctx.lineTo(i + 2, y + Math.random() * GRID_SIZE);
+                    ctx.stroke();
+                }
+            }
+
+            // Edge highlights
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.fillRect(0, y, canvas.width, 1);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.fillRect(0, y + GRID_SIZE - 1, canvas.width, 1);
+        }
+
+        // Draw 3D car
+        function draw3DCar(x, y, width, color, facingRight) {
+            const carWidth = width - 4;
+            const carHeight = GRID_SIZE - 10;
+            const carX = x + 2;
+            const carY = y + 5;
+            const depth = 8; // 3D depth
+
+            // Shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.fillRect(carX - 2, carY + carHeight, carWidth + 4, 3);
+
+            // Car body side (darker)
+            ctx.fillStyle = shadeColor(color, -30);
+            ctx.beginPath();
+            ctx.moveTo(carX, carY + carHeight);
+            ctx.lineTo(carX, carY + depth);
+            ctx.lineTo(carX + carWidth, carY + depth);
+            ctx.lineTo(carX + carWidth, carY + carHeight);
+            ctx.closePath();
+            ctx.fill();
+
+            // Car body top
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(carX, carY + depth);
+            ctx.lineTo(carX + depth / 2, carY);
+            ctx.lineTo(carX + carWidth - depth / 2, carY);
+            ctx.lineTo(carX + carWidth, carY + depth);
+            ctx.closePath();
+            ctx.fill();
+
+            // Car body front
+            ctx.fillStyle = shadeColor(color, -15);
+            ctx.fillRect(carX, carY + depth, carWidth, carHeight - depth);
+
+            // Windshield with 3D effect
+            const windowX = facingRight ? carX + carWidth * 0.6 : carX + carWidth * 0.2;
+            const windowWidth = carWidth * 0.25;
+
+            // Windshield side
+            ctx.fillStyle = 'rgba(100, 180, 255, 0.6)';
+            ctx.beginPath();
+            ctx.moveTo(windowX, carY + depth + 3);
+            ctx.lineTo(windowX + depth / 2, carY + 3);
+            ctx.lineTo(windowX + windowWidth - depth / 2, carY + 3);
+            ctx.lineTo(windowX + windowWidth, carY + depth + 3);
+            ctx.closePath();
+            ctx.fill();
+
+            // Windshield front
+            ctx.fillStyle = 'rgba(150, 200, 255, 0.5)';
+            ctx.fillRect(windowX, carY + depth + 3, windowWidth, carHeight * 0.4);
+
+            // Headlights/taillights
+            const lightX = facingRight ? carX + carWidth - 8 : carX + 2;
+            const lightColor = facingRight ? '#FFFF99' : '#FF4444';
+            ctx.fillStyle = lightColor;
+            ctx.fillRect(lightX, carY + depth + carHeight - depth - 8, 6, 4);
+
+            // Wheels with 3D effect
+            const wheelY = carY + carHeight - 6;
+            const wheel1X = carX + 8;
+            const wheel2X = carX + carWidth - 14;
+
+            drawWheel(wheel1X, wheelY);
+            drawWheel(wheel2X, wheelY);
+        }
+
+        // Draw 3D truck
+        function draw3DTruck(x, y, width, color, facingRight) {
+            const truckWidth = width - 4;
+            const truckHeight = GRID_SIZE - 8;
+            const truckX = x + 2;
+            const truckY = y + 4;
+            const depth = 10; // 3D depth
+
+            // Shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+            ctx.fillRect(truckX - 3, truckY + truckHeight, truckWidth + 6, 4);
+
+            // Cargo section dimensions
+            const cabWidth = truckWidth * 0.35;
+            const cargoWidth = truckWidth - cabWidth;
+            const cabX = facingRight ? truckX : truckX + cargoWidth;
+            const cargoX = facingRight ? truckX + cabWidth : truckX;
+
+            // Cargo section - side (darker)
+            ctx.fillStyle = shadeColor(color, -35);
+            ctx.beginPath();
+            ctx.moveTo(cargoX, truckY + truckHeight);
+            ctx.lineTo(cargoX, truckY + depth + 5);
+            ctx.lineTo(cargoX + cargoWidth, truckY + depth + 5);
+            ctx.lineTo(cargoX + cargoWidth, truckY + truckHeight);
+            ctx.closePath();
+            ctx.fill();
+
+            // Cargo section - top
+            ctx.fillStyle = shadeColor(color, -20);
+            ctx.beginPath();
+            ctx.moveTo(cargoX, truckY + depth + 5);
+            ctx.lineTo(cargoX + depth / 2, truckY + 5);
+            ctx.lineTo(cargoX + cargoWidth - depth / 2, truckY + 5);
+            ctx.lineTo(cargoX + cargoWidth, truckY + depth + 5);
+            ctx.closePath();
+            ctx.fill();
+
+            // Cargo section - front
+            ctx.fillStyle = shadeColor(color, -25);
+            ctx.fillRect(cargoX, truckY + depth + 5, cargoWidth, truckHeight - depth - 5);
+
+            // Cab - side (darker)
+            ctx.fillStyle = shadeColor(color, -40);
+            ctx.beginPath();
+            ctx.moveTo(cabX, truckY + truckHeight);
+            ctx.lineTo(cabX, truckY + depth + 8);
+            ctx.lineTo(cabX + cabWidth, truckY + depth + 8);
+            ctx.lineTo(cabX + cabWidth, truckY + truckHeight);
+            ctx.closePath();
+            ctx.fill();
+
+            // Cab - top
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(cabX, truckY + depth + 8);
+            ctx.lineTo(cabX + depth / 2, truckY + 8);
+            ctx.lineTo(cabX + cabWidth - depth / 2, truckY + 8);
+            ctx.lineTo(cabX + cabWidth, truckY + depth + 8);
+            ctx.closePath();
+            ctx.fill();
+
+            // Cab - front
+            ctx.fillStyle = shadeColor(color, -15);
+            ctx.fillRect(cabX, truckY + depth + 8, cabWidth, truckHeight - depth - 8);
+
+            // Cab window
+            const windowX = facingRight ? cabX + cabWidth * 0.5 : cabX + cabWidth * 0.15;
+            const windowWidth = cabWidth * 0.35;
+
+            ctx.fillStyle = 'rgba(100, 180, 255, 0.6)';
+            ctx.beginPath();
+            ctx.moveTo(windowX, truckY + depth + 10);
+            ctx.lineTo(windowX + depth / 2, truckY + 10);
+            ctx.lineTo(windowX + windowWidth, truckY + 10);
+            ctx.lineTo(windowX + windowWidth, truckY + depth + 10);
+            ctx.closePath();
+            ctx.fill();
+
+            // Headlights
+            const lightX = facingRight ? cabX + cabWidth - 6 : cabX + 2;
+            ctx.fillStyle = facingRight ? '#FFFF99' : '#FF4444';
+            ctx.fillRect(lightX, truckY + depth + truckHeight - depth - 10, 4, 5);
+
+            // Wheels
+            const wheelY = truckY + truckHeight - 5;
+            drawWheel(truckX + 10, wheelY);
+            drawWheel(truckX + truckWidth * 0.4, wheelY);
+            drawWheel(truckX + truckWidth - 15, wheelY);
+        }
+
+        // Helper: Draw wheel with 3D effect
+        function drawWheel(x, y) {
+            // Wheel shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+            ctx.beginPath();
+            ctx.ellipse(x + 1, y + 1, 6, 4, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Tire
+            ctx.fillStyle = '#2a2a2a';
+            ctx.beginPath();
+            ctx.arc(x, y, 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Hubcap
+            ctx.fillStyle = '#808080';
+            ctx.beginPath();
+            ctx.arc(x, y, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Shine
+            ctx.fillStyle = '#a0a0a0';
+            ctx.beginPath();
+            ctx.arc(x - 1, y - 1, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Helper: Shade color for 3D effect
+        function shadeColor(color, percent) {
+            const num = parseInt(color.replace('#', ''), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = Math.max(0, Math.min(255, (num >> 16) + amt));
+            const G = Math.max(0, Math.min(255, (num >> 8 & 0x00FF) + amt));
+            const B = Math.max(0, Math.min(255, (num & 0x0000FF) + amt));
+            return '#' + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
         }
 
         // Draw a realistic chicken with shading
