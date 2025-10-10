@@ -91,6 +91,34 @@
             text-align: left;
         }
 
+        .flight-display {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 215, 0, 0.9);
+            color: #000;
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-size: 2em;
+            font-weight: bold;
+            z-index: 101;
+            pointer-events: none;
+            font-family: Arial, sans-serif;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+            animation: pulse 0.5s infinite alternate;
+        }
+
+        .flight-display.active {
+            display: block;
+        }
+
+        @keyframes pulse {
+            from { transform: translate(-50%, -50%) scale(1); }
+            to { transform: translate(-50%, -50%) scale(1.05); }
+        }
+
         .controls {
             margin-top: 15px;
             color: white;
@@ -237,6 +265,7 @@
             <canvas id="gameCanvas" width="600" height="600"></canvas>
             <div class="score-display"><span id="scoreDisplay">0</span></div>
             <div class="coin-display">🪙 <span id="coinDisplay">0</span></div>
+            <div class="flight-display" id="flightDisplay">✈️ FLYING: <span id="flightTime">5.0</span>s</div>
             <button class="fullscreen-btn" id="fullscreenBtn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
         </div>
         <div class="controls">
@@ -278,6 +307,12 @@
         let coins = 0;
         let coinObjects = []; // Array to store coin positions
         let nextCoinSpawn = Math.floor(Math.random() * 14) + 5; // Random between 5-18 jumps
+
+        // Flight system
+        let isFlying = false;
+        let flightTimeRemaining = 0;
+        const FLIGHT_DURATION = 5000; // 5 seconds in milliseconds
+        const COINS_FOR_FLIGHT = 5;
 
         // Player
         let player = {
@@ -390,17 +425,41 @@
             player.renderX += (player.x - player.renderX) * playerLerpFactor;
             player.renderWorldY += (player.worldY - player.renderWorldY) * playerLerpFactor;
 
-            // Update hopping animation
+            // Update flight timer
+            if (isFlying) {
+                flightTimeRemaining -= deltaTime;
+                if (flightTimeRemaining <= 0) {
+                    isFlying = false;
+                    flightTimeRemaining = 0;
+                    document.getElementById('flightDisplay').classList.remove('active');
+                } else {
+                    // Update flight timer display
+                    document.getElementById('flightTime').textContent = (flightTimeRemaining / 1000).toFixed(1);
+                    document.getElementById('flightDisplay').classList.add('active');
+                }
+            }
+
+            // Update hopping animation (or flying animation)
             if (player.isHopping) {
                 player.hopProgress += deltaTime * 0.008; // Hop speed
                 if (player.hopProgress >= 1) {
                     player.hopProgress = 0;
                     player.isHopping = false;
-                    player.hopHeight = 0;
+                    if (!isFlying) {
+                        player.hopHeight = 0;
+                    }
                 } else {
-                    // Parabolic hop using sine wave
-                    player.hopHeight = Math.sin(player.hopProgress * Math.PI) * 15;
+                    // Parabolic hop using sine wave (or floating effect when flying)
+                    if (isFlying) {
+                        // Gentle floating animation when flying
+                        player.hopHeight = 25 + Math.sin(player.hopProgress * Math.PI * 2) * 5;
+                    } else {
+                        player.hopHeight = Math.sin(player.hopProgress * Math.PI) * 15;
+                    }
                 }
+            } else if (isFlying) {
+                // Maintain flying height even when not moving
+                player.hopHeight = 25;
             }
 
             // Smooth camera interpolation (lerp) - prevents jerky movement
@@ -429,6 +488,14 @@
                 if (!coin.collected && player.worldY === coin.y && player.x === coin.x) {
                     coin.collected = true;
                     coins++;
+
+                    // Check if player has collected enough coins for flight
+                    if (coins >= COINS_FOR_FLIGHT && !isFlying) {
+                        isFlying = true;
+                        flightTimeRemaining = FLIGHT_DURATION;
+                        coins = 0; // Reset coins after activating flight
+                    }
+
                     updateScoreDisplay();
                 }
             });
@@ -1259,6 +1326,9 @@
 
         // Check collision
         function checkCollision() {
+            // Don't check collision when flying
+            if (isFlying) return;
+
             cars.forEach(car => {
                 if (Math.floor(car.y) === player.worldY) {
                     const carLeft = car.x;
@@ -1373,6 +1443,9 @@
             coins = 0;
             coinObjects = [];
             nextCoinSpawn = Math.floor(Math.random() * 14) + 5;
+            isFlying = false;
+            flightTimeRemaining = 0;
+            document.getElementById('flightDisplay').classList.remove('active');
             player.x = Math.floor(COLS / 2);
             player.y = ROWS - 2;
             player.worldY = ROWS - 2;
