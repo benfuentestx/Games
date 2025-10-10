@@ -57,19 +57,38 @@
             position: relative;
         }
 
-        .coin-display {
+        .score-display {
             position: absolute;
-            top: 30px;
-            left: 30px;
-            background: rgba(0, 0, 0, 0.7);
+            top: 10px;
+            left: 10px;
+            background: transparent;
             color: white;
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-size: 1.5em;
+            padding: 0;
+            border-radius: 0;
+            font-size: 2em;
             font-weight: bold;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
             z-index: 100;
             pointer-events: none;
+            font-family: Arial, sans-serif;
+            text-align: left;
+        }
+
+        .coin-display {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: transparent;
+            color: white;
+            padding: 0;
+            border-radius: 0;
+            font-size: 2em;
+            font-weight: bold;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
+            z-index: 100;
+            pointer-events: none;
+            font-family: Arial, sans-serif;
+            text-align: left;
         }
 
         .controls {
@@ -89,7 +108,7 @@
             padding: 40px;
             border-radius: 15px;
             text-align: center;
-            z-index: 1000;
+            z-index: 10002;
         }
 
         .game-over h2 {
@@ -133,6 +152,12 @@
         .fullscreen-btn:hover {
             background: rgba(0, 0, 0, 0.9);
             transform: scale(1.05);
+        }
+
+        #fullscreenContainer .fullscreen-btn {
+            position: fixed;
+            top: 10px;
+            right: 10px;
         }
 
         .exit-fullscreen-btn {
@@ -185,10 +210,18 @@
             object-fit: contain;
         }
 
+        #fullscreenContainer .score-display {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            font-size: 2.5em;
+        }
+
         #fullscreenContainer .coin-display {
             position: fixed;
-            top: 30px;
-            left: 30px;
+            bottom: 20px;
+            left: 20px;
+            font-size: 2.5em;
         }
     </style>
 </head>
@@ -197,19 +230,14 @@
         <h1>🐔 Crossy Road</h1>
         <div class="score-board">
             <div class="score-item">
-                <div>Score: <span id="score">0</span></div>
-            </div>
-            <div class="score-item">
                 <div>High Score: <span id="highScore">0</span></div>
             </div>
-            <div class="score-item">
-                <div>🪙 Coins: <span id="coins">0</span></div>
-            </div>
         </div>
-        <div style="position: relative; display: inline-block;">
+        <div style="position: relative; display: inline-block;" id="canvasContainer">
             <canvas id="gameCanvas" width="600" height="600"></canvas>
+            <div class="score-display"><span id="scoreDisplay">0</span></div>
             <div class="coin-display">🪙 <span id="coinDisplay">0</span></div>
-            <button class="fullscreen-btn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
+            <button class="fullscreen-btn" id="fullscreenBtn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
         </div>
         <div class="controls">
             <p>🎮 Use Arrow Keys to Move</p>
@@ -224,9 +252,7 @@
         <button onclick="restartGame()">Play Again</button>
     </div>
 
-    <div id="fullscreenContainer">
-        <div class="coin-display">🪙 <span id="coinDisplayFullscreen">0</span></div>
-    </div>
+    <div id="fullscreenContainer"></div>
 
     <button class="exit-fullscreen-btn" id="exitFullscreenBtn" onclick="exitFullscreen()">✕ Exit Fullscreen</button>
 
@@ -1284,11 +1310,9 @@
         });
 
         function updateScoreDisplay() {
-            document.getElementById('score').textContent = score;
+            document.getElementById('scoreDisplay').textContent = score;
             document.getElementById('highScore').textContent = highScore;
-            document.getElementById('coins').textContent = coins;
             document.getElementById('coinDisplay').textContent = coins;
-            document.getElementById('coinDisplayFullscreen').textContent = coins;
         }
 
         function endGame() {
@@ -1358,16 +1382,28 @@
         }
 
         // Fullscreen functionality
+        let isFullscreen = false;
+
         function toggleFullscreen() {
+            if (isFullscreen) {
+                exitFullscreen();
+            } else {
+                enterFullscreen();
+            }
+        }
+
+        function enterFullscreen() {
             const fullscreenContainer = document.getElementById('fullscreenContainer');
             const exitBtn = document.getElementById('exitFullscreenBtn');
-            const canvas = document.getElementById('gameCanvas');
-            const normalCanvasParent = canvas.parentElement;
+            const canvasContainer = document.getElementById('canvasContainer');
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
 
-            // Move canvas to fullscreen container
-            fullscreenContainer.appendChild(canvas);
+            // Move entire canvas container to fullscreen
+            fullscreenContainer.appendChild(canvasContainer);
             fullscreenContainer.classList.add('active');
             exitBtn.classList.add('show');
+            fullscreenBtn.textContent = '✕ Exit Fullscreen';
+            isFullscreen = true;
 
             // Request browser fullscreen
             const elem = fullscreenContainer;
@@ -1378,16 +1414,14 @@
             } else if (elem.msRequestFullscreen) { // IE11
                 elem.msRequestFullscreen();
             }
-
-            // Store the normal parent for later
-            fullscreenContainer.dataset.normalParent = 'true';
         }
 
         function exitFullscreen() {
             const fullscreenContainer = document.getElementById('fullscreenContainer');
             const exitBtn = document.getElementById('exitFullscreenBtn');
-            const canvas = document.getElementById('gameCanvas');
-            const normalCanvasParent = document.querySelector('.game-container > div[style*="position: relative"]');
+            const canvasContainer = document.getElementById('canvasContainer');
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            const gameContainer = document.querySelector('.game-container');
 
             // Exit browser fullscreen
             if (document.fullscreenElement) {
@@ -1400,10 +1434,15 @@
                 }
             }
 
-            // Move canvas back to normal position
-            normalCanvasParent.insertBefore(canvas, normalCanvasParent.firstChild);
+            // Move canvas container back to game container
+            // Insert after the score-board div
+            const scoreBoard = gameContainer.querySelector('.score-board');
+            scoreBoard.parentNode.insertBefore(canvasContainer, scoreBoard.nextSibling);
+
             fullscreenContainer.classList.remove('active');
             exitBtn.classList.remove('show');
+            fullscreenBtn.textContent = '⛶ Fullscreen';
+            isFullscreen = false;
         }
 
         // Listen for ESC key to exit fullscreen
