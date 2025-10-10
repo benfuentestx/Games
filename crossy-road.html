@@ -110,6 +110,9 @@
             <div class="score-item">
                 <div>High Score: <span id="highScore">0</span></div>
             </div>
+            <div class="score-item">
+                <div>🪙 Coins: <span id="coins">0</span></div>
+            </div>
         </div>
         <canvas id="gameCanvas" width="600" height="600"></canvas>
         <div class="controls">
@@ -142,6 +145,11 @@
         let minRowGenerated = 0; // Track the furthest row we've generated (going into negatives)
         let startingWorldY = ROWS - 2; // Starting position
         let maxWorldY = ROWS - 2; // Track the furthest the player has gone (lowest value)
+
+        // Coin system
+        let coins = 0;
+        let coinObjects = []; // Array to store coin positions
+        let nextCoinSpawn = Math.floor(Math.random() * 14) + 5; // Random between 5-18 jumps
 
         // Player
         let player = {
@@ -272,6 +280,18 @@
                 }
             });
 
+            // Check coin collection
+            coinObjects.forEach(coin => {
+                if (!coin.collected && player.worldY === coin.y && player.x === coin.x) {
+                    coin.collected = true;
+                    coins++;
+                    updateScoreDisplay();
+                }
+            });
+
+            // Clean up old collected coins and coins far behind the player
+            coinObjects = coinObjects.filter(coin => !coin.collected && coin.y > cameraY - 5);
+
             // Check collision
             checkCollision();
         }
@@ -338,6 +358,16 @@
 
             // Draw sun in top right corner
             drawSun();
+
+            // Draw coins with camera offset
+            coinObjects.forEach(coin => {
+                if (!coin.collected) {
+                    const coinScreenY = (coin.y - cameraY) * GRID_SIZE;
+                    if (coinScreenY >= -GRID_SIZE && coinScreenY <= canvas.height) {
+                        drawCoin(coin.x * GRID_SIZE + GRID_SIZE / 2, coinScreenY + GRID_SIZE / 2);
+                    }
+                }
+            });
 
             // Draw player (chicken) with camera offset using smooth render positions
             const playerScreenY = (player.renderWorldY - cameraY) * GRID_SIZE;
@@ -1043,6 +1073,46 @@
             }
         }
 
+        // Draw coin with 3D effect
+        function drawCoin(x, y) {
+            const coinRadius = 12;
+
+            // Coin shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.beginPath();
+            ctx.ellipse(x, y + 2, coinRadius * 0.8, coinRadius * 0.3, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Outer ring (darker gold)
+            ctx.fillStyle = '#D4A017';
+            ctx.beginPath();
+            ctx.arc(x, y, coinRadius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Inner coin (bright gold)
+            const coinGradient = ctx.createRadialGradient(x - 3, y - 3, 2, x, y, coinRadius - 2);
+            coinGradient.addColorStop(0, '#FFD700');
+            coinGradient.addColorStop(0.5, '#FFC700');
+            coinGradient.addColorStop(1, '#D4A017');
+            ctx.fillStyle = coinGradient;
+            ctx.beginPath();
+            ctx.arc(x, y, coinRadius - 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Coin highlight (shine effect)
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.beginPath();
+            ctx.arc(x - 4, y - 4, coinRadius * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Center symbol (optional $ or circle)
+            ctx.strokeStyle = '#D4A017';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(x, y, coinRadius * 0.4, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+
         // Check collision
         function checkCollision() {
             cars.forEach(car => {
@@ -1070,6 +1140,17 @@
                     if (player.worldY < maxWorldY) {
                         maxWorldY = player.worldY;
                         score++;
+                        // Check if it's time to spawn a coin
+                        if (score === nextCoinSpawn) {
+                            // Spawn coin at a random x position on the next row
+                            coinObjects.push({
+                                x: Math.floor(Math.random() * COLS),
+                                y: player.worldY - Math.floor(Math.random() * 3 + 2), // Spawn 2-4 rows ahead
+                                collected: false
+                            });
+                            // Set next coin spawn (5-18 jumps from now)
+                            nextCoinSpawn = score + Math.floor(Math.random() * 14) + 5;
+                        }
                         // Check for win condition at score 333
                         if (score >= 333) {
                             winGame();
@@ -1103,6 +1184,7 @@
         function updateScoreDisplay() {
             document.getElementById('score').textContent = score;
             document.getElementById('highScore').textContent = highScore;
+            document.getElementById('coins').textContent = coins;
         }
 
         function endGame() {
@@ -1136,6 +1218,9 @@
         function restartGame() {
             gameOver = false;
             score = 0;
+            coins = 0;
+            coinObjects = [];
+            nextCoinSpawn = Math.floor(Math.random() * 14) + 5;
             player.x = Math.floor(COLS / 2);
             player.y = ROWS - 2;
             player.worldY = ROWS - 2;
