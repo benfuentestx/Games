@@ -483,6 +483,11 @@
             text-align: center;
             margin-bottom: 40px;
             position: relative;
+            pointer-events: none; /* Allow clicks to pass through */
+        }
+
+        .shop-header h2, .shop-coin-display, .close-shop-btn {
+            pointer-events: auto; /* Re-enable for interactive elements */
         }
 
         .shop-header h2 {
@@ -501,24 +506,32 @@
         }
 
         .close-shop-btn {
-            position: absolute;
-            top: 0;
-            right: 40px;
-            background: rgba(255, 255, 255, 0.2);
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: rgba(220, 38, 38, 0.9);
             backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            border: 3px solid rgba(255, 255, 255, 0.5);
             color: white;
-            padding: 15px 30px;
-            font-size: 1.2em;
-            font-weight: 700;
-            border-radius: 15px;
+            padding: 20px 40px;
+            font-size: 1.5em;
+            font-weight: 800;
+            border-radius: 20px;
             cursor: pointer;
             transition: all 0.3s ease;
+            z-index: 10002;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            pointer-events: auto; /* Ensure button is always clickable */
         }
 
         .close-shop-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(1.05);
+            background: rgba(220, 38, 38, 1);
+            transform: scale(1.1);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+        }
+
+        .close-shop-btn:active {
+            transform: scale(0.95);
         }
 
         .shop-grid {
@@ -596,51 +609,130 @@
             display: inline-block;
         }
 
-        .airstrike-panel {
-            position: fixed;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-            padding: 20px;
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(255, 0, 0, 0.3);
-            border: 2px solid rgba(255, 0, 0, 0.5);
-            z-index: 150;
-            text-align: center;
+        /* Shop Airstrike Code Panel */
+        .shop-airstrike-panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10001;
         }
 
-        .airstrike-panel h4 {
-            color: #ff4444;
+        .shop-airstrike-content {
+            background: linear-gradient(135deg, #dc2626, #991b1b);
+            padding: 50px;
+            border-radius: 24px;
+            text-align: center;
+            box-shadow: 0 12px 48px rgba(220, 38, 38, 0.8);
+            border: 3px solid rgba(255, 255, 255, 0.4);
+            max-width: 500px;
+        }
+
+        .shop-airstrike-content h3 {
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .shop-airstrike-content p {
+            color: white;
+        }
+
+        .shop-code-display {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px 40px;
+            border-radius: 15px;
+            font-size: 3em;
+            font-weight: 800;
+            color: white;
+            letter-spacing: 12px;
+            margin: 20px 0;
+            border: 3px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .shop-code-input {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 2.5em;
+            font-weight: 800;
+            color: #4ade80;
+            letter-spacing: 10px;
+            min-height: 60px;
+            border: 3px solid rgba(74, 222, 128, 0.5);
+            margin: 20px 0;
+        }
+
+        .btn-back-shop {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            color: white;
+            padding: 15px 35px;
             font-size: 1.2em;
             font-weight: 700;
-            margin-bottom: 10px;
-            text-transform: uppercase;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
         }
 
-        .airstrike-code-display {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 12px 20px;
+        .btn-back-shop:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        /* Airstrike Code Panel (Always Visible) */
+        .airstrike-code-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(255, 0, 0, 0.4);
+            border: 2px solid rgba(255, 0, 0, 0.6);
+            z-index: 150;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .airstrike-code-label {
+            color: #ff4444;
+            font-size: 0.9em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .airstrike-code-value {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 10px 25px;
             border-radius: 10px;
             font-size: 2em;
             font-weight: 800;
             color: white;
-            letter-spacing: 8px;
-            margin-bottom: 10px;
+            letter-spacing: 10px;
             border: 2px solid rgba(255, 255, 255, 0.3);
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
         }
 
-        .airstrike-input-display {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 8px 16px;
-            border-radius: 8px;
+        .airstrike-input-feedback {
             font-size: 1.5em;
             font-weight: 700;
             color: #4ade80;
-            letter-spacing: 6px;
-            min-height: 40px;
-            border: 2px solid rgba(74, 222, 128, 0.3);
+            letter-spacing: 8px;
+            min-height: 30px;
+            text-shadow: 0 2px 8px rgba(74, 222, 128, 0.5);
         }
 
         .airstrike-message {
@@ -897,7 +989,7 @@
         <div class="shop-header">
             <h2>⚡ POWER-UP SHOP ⚡</h2>
             <div class="shop-coin-display">💰 Coins: <span id="shopCoins">0</span></div>
-            <button class="close-shop-btn" onclick="exitShop()">✖ EXIT</button>
+            <button class="close-shop-btn" id="closeShopBtn">✖ EXIT (ESC)</button>
         </div>
         <div class="shop-grid">
             <div class="shop-card" data-powerup="speed" onclick="buyPowerUp('speed')">
@@ -924,19 +1016,32 @@
             <div class="shop-card" data-powerup="airstrike" onclick="buyPowerUp('airstrike')">
                 <div class="shop-card-icon">💣</div>
                 <h3>Airstrike</h3>
-                <p class="shop-card-desc">Clear all cars for 9 seconds. Enter code: 6741</p>
+                <p class="shop-card-desc">Clear all cars for 9.5 seconds & eliminate wolf for 10 seconds. Code: 6741</p>
                 <div class="shop-card-price">💰 4 Coins</div>
+                <div class="shop-card-status">Click to Purchase</div>
+            </div>
+            <div class="shop-card" data-powerup="rainbow" onclick="buyPowerUp('rainbow')">
+                <div class="shop-card-icon">🌈</div>
+                <h3>Rainbow Road</h3>
+                <p class="shop-card-desc">Spawns a safe grass lane for 20 spaces. No cars can touch it. Press R to activate.</p>
+                <div class="shop-card-price">💰 4 Coins</div>
+                <div class="shop-card-status">Click to Purchase</div>
+            </div>
+            <div class="shop-card" data-powerup="tsunami" onclick="buyPowerUp('tsunami')">
+                <div class="shop-card-icon">🌊</div>
+                <h3>Tsunami</h3>
+                <p class="shop-card-desc">Sweeps all cars off one side of the screen with a wave of water. 6-second duration.</p>
+                <div class="shop-card-price">💰 5 Coins</div>
                 <div class="shop-card-status">Click to Purchase</div>
             </div>
         </div>
     </div>
 
-    <!-- Airstrike Code Input Panel -->
-    <div class="airstrike-panel" id="airstrikePanel" style="display: none;">
-        <h4>🎯 AIRSTRIKE READY</h4>
-        <div class="airstrike-code-display">6741</div>
-        <p style="color: rgba(255,255,255,0.7); font-size: 0.9em; margin: 10px 0;">Type the code:</p>
-        <div class="airstrike-input-display" id="airstrikeInput"></div>
+    <!-- Airstrike Code Display (Always Visible When Owned) -->
+    <div class="airstrike-code-panel" id="airstrikeCodePanel" style="display: none;">
+        <div class="airstrike-code-label">🎯 AIRSTRIKE CODE:</div>
+        <div class="airstrike-code-value">6741</div>
+        <div class="airstrike-input-feedback" id="airstrikeInputFeedback"></div>
     </div>
 
     <!-- Airstrike Incoming Message -->
@@ -1053,6 +1158,17 @@
             </div>
 
             <div class="settings-section">
+                <h3>🏪 Shop Settings</h3>
+                <div class="setting-item">
+                    <label>Shop Unlock Score (Jumps/Steps):</label>
+                    <input type="number" id="shopUnlockScore" min="10" max="500" step="10" value="70">
+                    <small style="color: rgba(255,255,255,0.7); display: block; margin-top: 5px;">
+                        Number of jumps needed before shop appears
+                    </small>
+                </div>
+            </div>
+
+            <div class="settings-section">
                 <h3>🌙 Horror Mode</h3>
                 <div class="setting-item">
                     <label>Enable Horror Mode:</label>
@@ -1108,8 +1224,9 @@
         // Shop and Power-ups
         let shopUnlocked = false; // Shop unlocks at score 70
         let shopBuildingWorldY = null; // Position of shop building on map
-        let shopBuildingX = 7; // Center of map (column)
+        let shopBuildingX = 2; // Left side of map (column 2)
         let inShop = false; // True when player is in the shop interface
+        let shopCooldown = 0; // Timestamp when player can enter shop again
         let powerUpSpeedBoost = 1.0; // Speed boost multiplier (1.009 when active)
         let powerUpSpeedBoostActive = false;
         let powerUpFreezeTime = false;
@@ -1123,6 +1240,16 @@
         let carsGoneUntil = 0; // Timestamp when cars should respawn after airstrike
         let airstrikeCodeEntered = false;
         let airstrikeCodeInput = '';
+        let powerUpRainbowOwned = false; // Player has purchased Rainbow Road
+        let rainbowRoadActive = false; // Rainbow road is currently spawned
+        let rainbowRoadStartY = null; // Starting world Y position
+        let rainbowRoadEndY = null; // Ending world Y position (startY - 20)
+        let rainbowRoadColumn = null; // Which column (X position) the rainbow road is on
+        let powerUpTsunamiOwned = false; // Player has purchased Tsunami
+        let tsunamiActive = false; // Tsunami is currently active
+        let tsunamiEndTime = 0; // Timestamp when tsunami ends
+        let tsunamiX = 0; // Current X position of the tsunami wave
+        let tsunamiDirection = 1; // 1 for left-to-right, -1 for right-to-left
 
         // Game Settings (configurable) - MUST BE DEFINED FIRST
         let gameSettings = {
@@ -1161,6 +1288,9 @@
             wolfChaseDelay: 3000, // milliseconds before wolf starts chasing
             wolfSpeed: 2, // jumps per second
             wolfSpawnDistance: 5, // rows behind chicken when teleporting
+
+            // Shop settings
+            shopUnlockScore: 70, // Score needed for shop to appear
 
             // Horror mode settings
             horrorMode: false,
@@ -1297,21 +1427,36 @@
                     roads.push(newRoad);
 
                     // Add cars to the new road (distributed across lanes)
-                    const numCars = Math.floor(Math.random() * (gameSettings.vehicleDensityMax - gameSettings.vehicleDensityMin + 1)) + gameSettings.vehicleDensityMin;
-                    for (let i = 0; i < numCars; i++) {
-                        const vehicleType = getRandomVehicleType();
-                        const speedRange = gameSettings.vehicleSpeedMax - gameSettings.vehicleSpeedMin;
-                        // Pick a random lane within this road
-                        const lane = Math.floor(Math.random() * laneCount);
-                        const laneY = newRoad.row + lane;
-                        cars.push({
-                            x: Math.random() * COLS,
-                            y: laneY,
-                            width: vehicleType.width,
-                            speed: (Math.random() * speedRange + gameSettings.vehicleSpeedMin) * newRoad.direction,
-                            color: getRandomCarColor(),
-                            type: vehicleType.type
-                        });
+                    // BUT NOT during airstrike period!
+                    if (Date.now() >= carsGoneUntil) {
+                        const numCars = Math.floor(Math.random() * (gameSettings.vehicleDensityMax - gameSettings.vehicleDensityMin + 1)) + gameSettings.vehicleDensityMin;
+                        for (let i = 0; i < numCars; i++) {
+                            const vehicleType = getRandomVehicleType();
+                            const speedRange = gameSettings.vehicleSpeedMax - gameSettings.vehicleSpeedMin;
+                            // Pick a random lane within this road
+                            const lane = Math.floor(Math.random() * laneCount);
+                            const laneY = newRoad.row + lane;
+
+                            // Check if this lane is part of the Rainbow Road
+                            const isOnRainbowRoad = rainbowRoadActive &&
+                                                   laneY <= rainbowRoadStartY &&
+                                                   laneY >= rainbowRoadEndY;
+
+                            // Don't spawn cars on Rainbow Road
+                            if (!isOnRainbowRoad) {
+                                cars.push({
+                                    x: Math.random() * COLS,
+                                    y: laneY,
+                                    width: vehicleType.width,
+                                    speed: (Math.random() * speedRange + gameSettings.vehicleSpeedMin) * newRoad.direction,
+                                    color: getRandomCarColor(),
+                                    type: vehicleType.type,
+                                    tumbling: false,
+                                    tumbleRotation: 0,
+                                    tumbleSpeed: 0
+                                });
+                            }
+                        }
                     }
                     minRowGenerated -= laneCount; // Skip rows that are part of this road
                 } else {
@@ -1498,6 +1643,14 @@
                 ghostPhasing = false;
             }
 
+            // Deactivate Rainbow Road if player has passed beyond it
+            if (rainbowRoadActive && player.worldY < rainbowRoadEndY) {
+                rainbowRoadActive = false;
+                rainbowRoadStartY = null;
+                rainbowRoadEndY = null;
+                rainbowRoadColumn = null;
+            }
+
             // Move cars with delta time for smooth frame-independent movement
             const timeScale = deltaTime / 16.67; // Normalize to 60fps
 
@@ -1514,6 +1667,46 @@
                     } else if (car.speed < 0 && car.x < -car.width - 2) {
                         car.x = COLS + 2;
                     }
+                });
+            }
+
+            // Remove any cars that are on the Rainbow Road (continuous filtering)
+            if (rainbowRoadActive) {
+                cars = cars.filter(car => {
+                    const carY = Math.floor(car.y);
+                    const isOnRainbowRoad = carY <= rainbowRoadStartY && carY >= rainbowRoadEndY;
+                    return !isOnRainbowRoad; // Keep cars that are NOT on rainbow road
+                });
+            }
+
+            // Tsunami: make cars tumble when wave hits them
+            if (tsunamiActive) {
+                cars.forEach(car => {
+                    const carCenterX = car.x + car.width / 2;
+                    const waveReached = tsunamiDirection === 1 ?
+                        (carCenterX <= tsunamiX && carCenterX >= tsunamiX - 2) :
+                        (carCenterX >= tsunamiX && carCenterX <= tsunamiX + 2);
+
+                    // If wave just reached this car, start tumbling
+                    if (waveReached && !car.tumbling) {
+                        car.tumbling = true;
+                        car.tumbleRotation = 0;
+                        // Push speed to the side (same direction as wave)
+                        car.tumbleSpeed = tsunamiDirection * 0.8;
+                    }
+
+                    // Update tumbling cars
+                    if (car.tumbling) {
+                        car.x += car.tumbleSpeed * timeScale;
+                        car.tumbleRotation += 0.3 * timeScale; // Rotate as it tumbles
+                        car.tumbleSpeed *= 0.98; // Slow down over time
+                    }
+                });
+
+                // Remove cars that have tumbled off screen
+                cars = cars.filter(car => {
+                    if (!car.tumbling) return true;
+                    return car.x > -5 && car.x < COLS + 5;
                 });
             }
 
@@ -1537,15 +1730,15 @@
             // Clean up old collected coins and coins far behind the player
             coinObjects = coinObjects.filter(coin => !coin.collected && coin.y > cameraY - 5);
 
-            // Shop unlock at score 70
-            if (score >= 70 && !shopUnlocked) {
+            // Shop unlock at configured score
+            if (score >= gameSettings.shopUnlockScore && !shopUnlocked) {
                 shopUnlocked = true;
-                // Spawn shop building ahead of player (3 rows forward on grass)
+                // Spawn shop building ahead of player (5 rows forward on grass)
                 shopBuildingWorldY = player.worldY - 5; // 5 rows ahead
             }
 
             // Check if player enters shop building (larger detection area)
-            if (shopUnlocked && shopBuildingWorldY !== null && !inShop) {
+            if (shopUnlocked && shopBuildingWorldY !== null && !inShop && Date.now() >= shopCooldown) {
                 const distanceY = Math.abs(player.worldY - shopBuildingWorldY);
                 const distanceX = Math.abs(player.x - shopBuildingX);
 
@@ -1560,18 +1753,37 @@
                 powerUpFreezeTime = false;
             }
 
+            // Update tsunami wave animation
+            if (tsunamiActive) {
+                // Move tsunami wave across screen
+                tsunamiX += tsunamiDirection * deltaTime * 0.3; // Speed of wave
+
+                // Check if tsunami has ended
+                if (Date.now() >= tsunamiEndTime) {
+                    tsunamiActive = false;
+                }
+            }
+
             // Update airstrike animation
             if (airstrikeAnimating) {
                 airstrikeY += deltaTime * 1.5; // Fast missile speed
 
                 // Check if missile reached bottom
                 if (airstrikeY >= canvas.height + 50) {
-                    // Explosion! Remove all cars
+                    // Explosion! Remove all cars and wolf
                     airstrikeAnimating = false;
                     airstrikeExplosionTime = Date.now();
-                    carsGoneUntil = Date.now() + 9000; // Cars gone for 9 seconds
+                    carsGoneUntil = Date.now() + 9500; // Cars gone for 9.5 seconds
                     cars = []; // Clear all cars
                     powerUpAirstrikeActive = true;
+
+                    // Remove wolf for 10 seconds
+                    wolfChasing = false;
+                    wolfWorldY = player.worldY + 999; // Send wolf far away
+                    setTimeout(() => {
+                        wolfChasing = false;
+                        timeSinceLastForwardMove = 0; // Reset wolf chase timer
+                    }, 10000);
 
                     // Reset airstrike ownership so player can buy again
                     powerUpAirstrikeOwned = false;
@@ -1579,6 +1791,8 @@
                     if (airstrikeShopItem) {
                         airstrikeShopItem.classList.remove('purchased');
                     }
+                    // Hide code panel
+                    document.getElementById('airstrikeCodePanel').style.display = 'none';
                 }
             }
 
@@ -1670,13 +1884,23 @@
                 const screenY = (worldRow - cameraY) * GRID_SIZE;
                 if (screenY < -GRID_SIZE || screenY > canvas.height) continue;
 
-                // Check if this row is part of a multi-lane road
-                const road = roads.find(road => worldRow >= road.row && worldRow < road.row + road.laneCount);
-                if (road) {
-                    const laneIndex = worldRow - road.row;
-                    draw3DRoad(screenY, road.laneCount, laneIndex, road.direction);
+                // Check if this row is part of the Rainbow Road
+                const isRainbowRoad = rainbowRoadActive &&
+                                      worldRow <= rainbowRoadStartY &&
+                                      worldRow >= rainbowRoadEndY;
+
+                if (isRainbowRoad) {
+                    // Draw rainbow road (colorful grass lane)
+                    drawRainbowRoad(screenY, worldRow);
                 } else {
-                    draw3DGrass(screenY);
+                    // Check if this row is part of a multi-lane road
+                    const road = roads.find(road => worldRow >= road.row && worldRow < road.row + road.laneCount);
+                    if (road) {
+                        const laneIndex = worldRow - road.row;
+                        draw3DRoad(screenY, road.laneCount, laneIndex, road.direction);
+                    } else {
+                        draw3DGrass(screenY);
+                    }
                 }
             }
 
@@ -1688,6 +1912,14 @@
                 const facingRight = car.speed > 0;
                 const x = car.x * GRID_SIZE;
                 const width = car.width * GRID_SIZE;
+
+                // Apply rotation if car is tumbling
+                if (car.tumbling) {
+                    ctx.save();
+                    ctx.translate(x + width / 2, screenY + GRID_SIZE / 2);
+                    ctx.rotate(car.tumbleRotation);
+                    ctx.translate(-(x + width / 2), -(screenY + GRID_SIZE / 2));
+                }
 
                 switch(car.type) {
                     case 'sedan':
@@ -1711,6 +1943,11 @@
                     case 'semi':
                         drawSemiTruck(x, screenY, width, car.color, facingRight);
                         break;
+                }
+
+                // Restore context if we rotated
+                if (car.tumbling) {
+                    ctx.restore();
                 }
             });
 
@@ -1839,6 +2076,99 @@
                     ctx.fill();
                 }
             }
+
+            // Draw HUGE tsunami wave
+            if (tsunamiActive) {
+                const waveX = tsunamiX * GRID_SIZE;
+                const waveWidth = 200; // Much wider wave
+                const time = Date.now() * 0.003;
+
+                // Draw massive wave shadow/base
+                const shadowGradient = ctx.createLinearGradient(
+                    waveX - waveWidth, 0,
+                    waveX + waveWidth, 0
+                );
+
+                if (tsunamiDirection === 1) {
+                    shadowGradient.addColorStop(0, 'rgba(0, 50, 100, 0)');
+                    shadowGradient.addColorStop(0.5, 'rgba(0, 80, 150, 0.4)');
+                    shadowGradient.addColorStop(1, 'rgba(0, 100, 180, 0)');
+                } else {
+                    shadowGradient.addColorStop(0, 'rgba(0, 100, 180, 0)');
+                    shadowGradient.addColorStop(0.5, 'rgba(0, 80, 150, 0.4)');
+                    shadowGradient.addColorStop(1, 'rgba(0, 50, 100, 0)');
+                }
+
+                ctx.fillStyle = shadowGradient;
+                ctx.fillRect(waveX - waveWidth, 0, waveWidth * 2, canvas.height);
+
+                // Draw the main massive wave with curves
+                for (let y = 0; y < canvas.height; y += 5) {
+                    const waveHeight = Math.sin(y * 0.05 + time) * 40 + 60;
+                    const waveOffset = Math.sin(y * 0.03 + time * 1.5) * 20;
+
+                    // Main wave body
+                    const mainGradient = ctx.createLinearGradient(
+                        waveX - waveHeight + waveOffset, y,
+                        waveX + waveHeight + waveOffset, y
+                    );
+
+                    if (tsunamiDirection === 1) {
+                        mainGradient.addColorStop(0, 'rgba(0, 119, 190, 0.1)');
+                        mainGradient.addColorStop(0.2, 'rgba(0, 150, 255, 0.7)');
+                        mainGradient.addColorStop(0.4, 'rgba(30, 180, 255, 0.95)');
+                        mainGradient.addColorStop(0.6, 'rgba(100, 200, 255, 0.9)');
+                        mainGradient.addColorStop(0.8, 'rgba(173, 216, 230, 0.7)');
+                        mainGradient.addColorStop(1, 'rgba(255, 255, 255, 0.3)');
+                    } else {
+                        mainGradient.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
+                        mainGradient.addColorStop(0.2, 'rgba(173, 216, 230, 0.7)');
+                        mainGradient.addColorStop(0.4, 'rgba(100, 200, 255, 0.9)');
+                        mainGradient.addColorStop(0.6, 'rgba(30, 180, 255, 0.95)');
+                        mainGradient.addColorStop(0.8, 'rgba(0, 150, 255, 0.7)');
+                        mainGradient.addColorStop(1, 'rgba(0, 119, 190, 0.1)');
+                    }
+
+                    ctx.fillStyle = mainGradient;
+                    ctx.fillRect(waveX - waveHeight + waveOffset, y, waveHeight * 2, 5);
+                }
+
+                // Add dramatic foam/spray particles
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                for (let i = 0; i < 50; i++) {
+                    const particleY = (i / 50) * canvas.height;
+                    const particleOffset = Math.sin(time + i * 0.5) * 60 + Math.cos(time * 1.3 + i) * 30;
+                    const particleX = waveX + particleOffset;
+                    const size = 3 + Math.sin(time * 2 + i) * 2;
+                    ctx.beginPath();
+                    ctx.arc(particleX, particleY, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Add water droplets flying off
+                for (let i = 0; i < 30; i++) {
+                    const dropY = Math.random() * canvas.height;
+                    const dropOffset = Math.sin(time * 3 + i) * 100 + Math.random() * 50;
+                    const dropX = waveX + (tsunamiDirection * dropOffset);
+                    const dropSize = 2 + Math.random() * 3;
+                    ctx.fillStyle = `rgba(100, 200, 255, ${0.5 + Math.random() * 0.5})`;
+                    ctx.beginPath();
+                    ctx.arc(dropX, dropY, dropSize, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Add white crest at the top of wave
+                const crestGradient = ctx.createLinearGradient(waveX - 80, 0, waveX + 80, 0);
+                crestGradient.addColorStop(0, 'rgba(255, 255, 255, 0)');
+                crestGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.8)');
+                crestGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+                for (let y = 0; y < canvas.height; y += 20) {
+                    const crestOffset = Math.sin(y * 0.1 + time * 2) * 30;
+                    ctx.fillStyle = crestGradient;
+                    ctx.fillRect(waveX - 80 + crestOffset, y, 160, 15);
+                }
+            }
         }
 
         // Helper function to darken a color for night time
@@ -1938,6 +2268,37 @@
             ctx.fillRect(0, y, canvas.width, 1);
             ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
             ctx.fillRect(0, y + GRID_SIZE - 1, canvas.width, 1);
+        }
+
+        // Draw Rainbow Road - colorful safe lane
+        function drawRainbowRoad(y, worldRow) {
+            // Create rainbow gradient based on world position for animated effect
+            const offset = (worldRow * 50 + Date.now() * 0.1) % 360;
+            const gradient = ctx.createLinearGradient(0, y, canvas.width, y);
+
+            // Add rainbow color stops
+            for (let i = 0; i <= 6; i++) {
+                const hue = (offset + i * 60) % 360;
+                gradient.addColorStop(i / 6, `hsl(${hue}, 100%, 70%)`);
+            }
+
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, y, canvas.width, GRID_SIZE);
+
+            // Add sparkle effect
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            for (let i = 0; i < canvas.width; i += 30) {
+                const sparkleX = i + ((worldRow + Date.now() * 0.001) % 30);
+                const sparkleY = y + ((worldRow * 13) % GRID_SIZE);
+                ctx.beginPath();
+                ctx.arc(sparkleX, sparkleY, 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Edge glow
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.fillRect(0, y, canvas.width, 2);
+            ctx.fillRect(0, y + GRID_SIZE - 2, canvas.width, 2);
         }
 
         // Draw Sedan - standard 4-door car
@@ -3977,6 +4338,12 @@
             // Don't check collision when flying, ghost phasing, military is knocked down, or in shop
             if (isFlying || ghostPhasing || militaryKnockedDown || inShop) return;
 
+            // Check if player is on Rainbow Road - no collisions on Rainbow Road
+            const playerOnRainbowRoad = rainbowRoadActive &&
+                                       player.worldY <= rainbowRoadStartY &&
+                                       player.worldY >= rainbowRoadEndY;
+            if (playerOnRainbowRoad) return;
+
             cars.forEach(car => {
                 if (Math.floor(car.y) === player.worldY) {
                     const carLeft = car.x;
@@ -4000,6 +4367,12 @@
 
         // Handle keyboard input
         document.addEventListener('keydown', (e) => {
+            // ESC key to exit shop
+            if (e.key === 'Escape' && inShop) {
+                exitShop();
+                return;
+            }
+
             if (gameOver) return;
 
             // Space bar for character powers
@@ -4020,6 +4393,52 @@
                     updatePowerDisplay();
                 }
 
+                return;
+            }
+
+            // R key for Rainbow Road activation
+            if ((e.key === 'r' || e.key === 'R') && powerUpRainbowOwned && !rainbowRoadActive && gameStarted && !inShop) {
+                e.preventDefault();
+                // Activate Rainbow Road - spawn it ahead of player
+                rainbowRoadActive = true;
+                rainbowRoadStartY = player.worldY - 5; // 5 rows ahead of player
+                rainbowRoadEndY = rainbowRoadStartY - 20; // Lasts for 20 spaces
+                rainbowRoadColumn = player.x; // Same column as player
+
+                // Remove all cars that are on the Rainbow Road
+                cars = cars.filter(car => {
+                    const carY = Math.floor(car.y);
+                    const isOnRainbowRoad = carY <= rainbowRoadStartY && carY >= rainbowRoadEndY;
+                    return !isOnRainbowRoad; // Keep cars that are NOT on rainbow road
+                });
+
+                // Mark as used - player needs to buy again
+                powerUpRainbowOwned = false;
+                const rainbowShopItem = document.querySelector('[data-powerup="rainbow"]');
+                if (rainbowShopItem) {
+                    rainbowShopItem.classList.remove('purchased');
+                    rainbowShopItem.querySelector('.shop-card-status').textContent = 'Click to Purchase';
+                }
+                return;
+            }
+
+            // T key for Tsunami activation
+            if ((e.key === 't' || e.key === 'T') && powerUpTsunamiOwned && !tsunamiActive && gameStarted && !inShop) {
+                e.preventDefault();
+                // Activate Tsunami
+                tsunamiActive = true;
+                tsunamiEndTime = Date.now() + 6000; // 6 seconds
+                // Randomly choose direction: left-to-right or right-to-left
+                tsunamiDirection = Math.random() > 0.5 ? 1 : -1;
+                tsunamiX = tsunamiDirection === 1 ? -2 : COLS + 2;
+
+                // Mark as used - player needs to buy again
+                powerUpTsunamiOwned = false;
+                const tsunamiShopItem = document.querySelector('[data-powerup="tsunami"]');
+                if (tsunamiShopItem) {
+                    tsunamiShopItem.classList.remove('purchased');
+                    tsunamiShopItem.querySelector('.shop-card-status').textContent = 'Click to Purchase';
+                }
                 return;
             }
 
@@ -4376,7 +4795,7 @@
             }
         }
 
-        function exitFullscreen() {
+        function exitFullscreen() {            
             const fullscreenContainer = document.getElementById('fullscreenContainer');
             const exitBtn = document.getElementById('exitFullscreenBtn');
             const canvasContainer = document.getElementById('canvasContainer');
@@ -4451,6 +4870,7 @@
             document.getElementById('wolfSpeed').value = gameSettings.wolfSpeed;
             document.getElementById('wolfSpawnDistance').value = gameSettings.wolfSpawnDistance;
             document.getElementById('winScore').value = gameSettings.winScore;
+            document.getElementById('shopUnlockScore').value = gameSettings.shopUnlockScore;
             document.getElementById('horrorMode').checked = gameSettings.horrorMode;
             document.getElementById('dayDuration').value = gameSettings.dayDuration / 1000; // Convert to seconds
             document.getElementById('nightDuration').value = gameSettings.nightDuration / 1000; // Convert to seconds
@@ -4475,6 +4895,7 @@
             gameSettings.wolfSpeed = parseFloat(document.getElementById('wolfSpeed').value);
             gameSettings.wolfSpawnDistance = parseInt(document.getElementById('wolfSpawnDistance').value);
             gameSettings.winScore = parseInt(document.getElementById('winScore').value);
+            gameSettings.shopUnlockScore = parseInt(document.getElementById('shopUnlockScore').value);
             gameSettings.horrorMode = document.getElementById('horrorMode').checked;
             gameSettings.dayDuration = parseFloat(document.getElementById('dayDuration').value) * 1000; // Convert to ms
             gameSettings.nightDuration = parseFloat(document.getElementById('nightDuration').value) * 1000; // Convert to ms
@@ -4509,6 +4930,7 @@
                     wolfChaseDelay: 3000,
                     wolfSpeed: 2,
                     wolfSpawnDistance: 5,
+                    shopUnlockScore: 70,
                     horrorMode: false,
                     dayDuration: 30000,
                     nightDuration: 20000
@@ -4558,15 +4980,131 @@
         }
 
         // Shop Functions
+        let shopSafeTime = 0; // Timestamp when safe period ends after leaving shop
+        let shopAirstrikeCodeInput = ''; // Code input while in shop
+
         function enterShop() {
             inShop = true;
-            document.getElementById('fullscreenShop').style.display = 'block';
+            const shopElement = document.getElementById('fullscreenShop');
+            if (shopElement) {
+                console.log('showing shop again');
+                shopElement.style.display = 'block';
+            }
             document.getElementById('shopCoins').textContent = coins;
         }
 
+        function closeShopAirstrikePanel() {
+            document.getElementById('shopAirstrikePanel').style.display = 'none';
+            shopAirstrikeCodeInput = '';
+            document.getElementById('shopCodeInput').textContent = '';
+        }
+
         function exitShop() {
+            console.log('exitShop called'); // Debug
             inShop = false;
-            document.getElementById('fullscreenShop').style.display = 'none';
+            const shopElement = document.getElementById('fullscreenShop');
+            if (shopElement) {
+                shopElement.style.display = 'none';
+                console.log('Shop display set to none'); // Debug
+            } else {
+                console.log('Shop element not found!'); // Debug
+            }
+
+            // Move player 2 spaces forward (up) from shop
+            player.worldY -= 2;
+            player.renderWorldY = player.worldY;
+
+            // Set cooldown - player can't re-enter shop for 3 seconds
+            shopCooldown = Date.now() + 3000;
+
+            // Clear all cars and enemies for 2 seconds
+            cars = [];
+            monsters = [];
+
+            // Stop wolf chasing and send it far away for 9 seconds
+            wolfChasing = false;
+            const tempWolfY = wolfWorldY; // Save old position
+            wolfWorldY = player.worldY + 999; // Send wolf far away
+
+            // Reset wolf after 9 seconds
+            setTimeout(() => {
+                wolfChasing = false;
+                timeSinceLastForwardMove = 0; // Reset wolf chase timer
+            }, 9000);
+
+            // Set safe time - 2 seconds from now
+            shopSafeTime = Date.now() + 2000;
+
+            // After 2 seconds, respawn cars for existing roads
+            setTimeout(() => {
+                respawnCarsAfterShop();
+            }, 2000);
+        }
+
+        // Add event listener for close shop button
+        window.addEventListener('DOMContentLoaded', function() {
+            const closeBtn = document.getElementById('closeShopBtn');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Close button clicked!'); // Debug
+                    exitShop();
+                });
+                console.log('Close button listener added');
+            } else {
+                console.log('Close button not found!');
+            }
+        });
+
+        function respawnCarsAfterShop() {
+            // Regenerate cars for all existing roads
+            roads.forEach(road => {
+                if (road.laneCount > 1) {
+                    // Multi-lane road
+                    road.lanes = road.lanes || [];
+                    road.lanes.length = 0; // Clear existing lanes
+
+                    for (let i = 0; i < road.laneCount; i++) {
+                        const laneDirection = (i % 2 === 0) ? 1 : -1;
+                        const vehicleCount = Math.floor(Math.random() * 2) + 1;
+                        const vehicles = [];
+
+                        for (let v = 0; v < vehicleCount; v++) {
+                            const vehicleType = getRandomVehicleType();
+                            const vehicleX = (Math.random() * COLS * 2) - COLS;
+                            vehicles.push({
+                                x: vehicleX,
+                                type: vehicleType.type,
+                                width: vehicleType.width,
+                                speed: (Math.random() * 0.03 + 0.02) * laneDirection,
+                                color: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#FFD93D'][Math.floor(Math.random() * 6)]
+                            });
+                        }
+
+                        road.lanes.push({
+                            direction: laneDirection,
+                            vehicles: vehicles
+                        });
+                    }
+
+                    // Flatten vehicles for main cars array
+                    road.lanes.forEach((lane, laneIndex) => {
+                        lane.vehicles.forEach(vehicle => {
+                            cars.push({
+                                ...vehicle,
+                                y: road.row + laneIndex,
+                                lane: laneIndex
+                            });
+                        });
+                    });
+                }
+            });
+
+            // Respawn monsters if in horror mode
+            if (gameSettings.horrorMode && isNightTime) {
+                spawnNightMonsters();
+            }
         }
 
         function buyPowerUp(powerUpType) {
@@ -4582,7 +5120,9 @@
                 'speed': 1,
                 'freeze': 1,
                 'lives': 2,
-                'airstrike': 4
+                'airstrike': 4,
+                'rainbow': 4,
+                'tsunami': 5
             };
 
             const cost = costs[powerUpType];
@@ -4630,12 +5170,32 @@
                     break;
 
                 case 'airstrike':
+                    // Activate airstrike immediately
                     powerUpAirstrikeOwned = true;
                     if (shopItem) {
                         shopItem.classList.add('purchased');
                         shopItem.querySelector('.shop-card-status').textContent = 'PURCHASED';
                     }
-                    // Don't show airstrike panel here - it will activate automatically
+                    // Show the code panel permanently at bottom
+                    document.getElementById('airstrikeCodePanel').style.display = 'flex';
+                    break;
+
+                case 'rainbow':
+                    // Give player Rainbow Road power-up
+                    powerUpRainbowOwned = true;
+                    if (shopItem) {
+                        shopItem.classList.add('purchased');
+                        shopItem.querySelector('.shop-card-status').textContent = 'PURCHASED - Press R';
+                    }
+                    break;
+
+                case 'tsunami':
+                    // Give player Tsunami power-up
+                    powerUpTsunamiOwned = true;
+                    if (shopItem) {
+                        shopItem.classList.add('purchased');
+                        shopItem.querySelector('.shop-card-status').textContent = 'PURCHASED - Press T';
+                    }
                     break;
             }
 
@@ -4644,7 +5204,7 @@
             document.getElementById('shopCoins').textContent = coins;
         }
 
-        // Airstrike code input handler - works anytime airstrike is owned
+        // Airstrike code input handler - works during gameplay (not in shop)
         document.addEventListener('keydown', function(e) {
             // Only accept input if airstrike is owned and game is running and not in shop
             if (!powerUpAirstrikeOwned || !gameStarted || gameOver || inShop || airstrikeAnimating) {
@@ -4655,12 +5215,8 @@
             if (e.key >= '0' && e.key <= '9') {
                 airstrikeCodeInput += e.key;
 
-                // Show panel when typing starts
-                const airstrikePanel = document.getElementById('airstrikePanel');
-                if (airstrikePanel) {
-                    airstrikePanel.style.display = 'block';
-                    document.getElementById('airstrikeInput').textContent = airstrikeCodeInput;
-                }
+                // Show feedback in the permanent panel
+                document.getElementById('airstrikeInputFeedback').textContent = airstrikeCodeInput;
 
                 // Check if code is complete (4 digits)
                 if (airstrikeCodeInput.length === 4) {
@@ -4668,28 +5224,26 @@
                         // Correct code! Launch airstrike
                         launchAirstrike();
                     } else {
-                        // Wrong code, reset
-                        airstrikeCodeInput = '';
-                        document.getElementById('airstrikeInput').textContent = '';
-                        // Could add visual feedback for wrong code
+                        // Wrong code, show red and reset
+                        const feedbackEl = document.getElementById('airstrikeInputFeedback');
+                        feedbackEl.style.color = '#ff4444';
+                        setTimeout(() => {
+                            airstrikeCodeInput = '';
+                            feedbackEl.textContent = '';
+                            feedbackEl.style.color = '#4ade80';
+                        }, 500);
                     }
                 }
             } else if (e.key === 'Backspace' && airstrikeCodeInput.length > 0) {
                 airstrikeCodeInput = airstrikeCodeInput.slice(0, -1);
-                document.getElementById('airstrikeInput').textContent = airstrikeCodeInput;
-
-                // Hide panel if input is empty
-                if (airstrikeCodeInput.length === 0) {
-                    document.getElementById('airstrikePanel').style.display = 'none';
-                }
+                document.getElementById('airstrikeInputFeedback').textContent = airstrikeCodeInput;
             }
         });
 
         function launchAirstrike() {
-            // Hide the code panel
-            document.getElementById('airstrikePanel').style.display = 'none';
+            // Clear the input feedback
             airstrikeCodeInput = '';
-            document.getElementById('airstrikeInput').textContent = '';
+            document.getElementById('airstrikeInputFeedback').textContent = '';
 
             // Show "AIRSTRIKE INCOMING" message
             const airstrikeMsg = document.getElementById('airstrikeMessage');
