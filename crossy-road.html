@@ -465,6 +465,176 @@
             }
         }
 
+        /* Shop Styles */
+        .shop-container {
+            position: fixed;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            z-index: 50;
+            max-width: 220px;
+        }
+
+        .shop-container h3 {
+            color: white;
+            font-size: 1.2em;
+            font-weight: 700;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .shop-container p {
+            color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .shop-items {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .shop-item {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .shop-item:hover:not(.purchased) {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(4px);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .shop-item.purchased {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .shop-item-name {
+            color: white;
+            font-size: 0.95em;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .shop-item-cost {
+            color: #ffd700;
+            font-size: 0.9em;
+            font-weight: 700;
+        }
+
+        .shop-item-desc {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.75em;
+            text-align: center;
+            line-height: 1.3;
+        }
+
+        .airstrike-panel {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(255, 0, 0, 0.3);
+            border: 2px solid rgba(255, 0, 0, 0.5);
+            z-index: 150;
+            text-align: center;
+        }
+
+        .airstrike-panel h4 {
+            color: #ff4444;
+            font-size: 1.2em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .airstrike-code-display {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 2em;
+            font-weight: 800;
+            color: white;
+            letter-spacing: 8px;
+            margin-bottom: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .airstrike-input-display {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #4ade80;
+            letter-spacing: 6px;
+            min-height: 40px;
+            border: 2px solid rgba(74, 222, 128, 0.3);
+        }
+
+        .airstrike-message {
+            position: fixed;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #dc2626, #991b1b);
+            color: white;
+            padding: 30px 50px;
+            border-radius: 20px;
+            font-size: 2.5em;
+            font-weight: 800;
+            z-index: 200;
+            pointer-events: none;
+            box-shadow: 0 12px 48px rgba(220, 38, 38, 0.8),
+                        0 0 0 2px rgba(255, 255, 255, 0.3) inset;
+            border: 3px solid rgba(255, 255, 255, 0.4);
+            animation: airstrikeAlert 0.5s infinite alternate;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        @keyframes airstrikeAlert {
+            from {
+                transform: translate(-50%, -50%) scale(1);
+                box-shadow: 0 12px 48px rgba(220, 38, 38, 0.8);
+            }
+            to {
+                transform: translate(-50%, -50%) scale(1.05);
+                box-shadow: 0 16px 64px rgba(220, 38, 38, 1);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .shop-container {
+                position: static;
+                transform: none;
+                margin: 20px auto;
+                max-width: 500px;
+            }
+        }
+
         .game-over {
             display: none;
             position: fixed;
@@ -651,26 +821,67 @@
         <h3>Choose Character</h3>
         <div class="character-list">
             <div class="character-option active" data-character="chick" onclick="selectCharacter('chick')">
-                <div class="character-preview" id="preview-chick"></div>
+                <canvas class="character-preview" id="preview-chick" width="60" height="60"></canvas>
                 <span>🐥 Chick</span>
             </div>
             <div class="character-option" data-character="goose" onclick="selectCharacter('goose')">
-                <div class="character-preview" id="preview-goose"></div>
+                <canvas class="character-preview" id="preview-goose" width="60" height="60"></canvas>
                 <span>🦆 Goose</span>
             </div>
             <div class="character-option" data-character="ghost" onclick="selectCharacter('ghost')">
-                <div class="character-preview" id="preview-ghost"></div>
+                <canvas class="character-preview" id="preview-ghost" width="60" height="60"></canvas>
                 <span>👻 Ghost</span>
             </div>
             <div class="character-option" data-character="military" onclick="selectCharacter('military')">
-                <div class="character-preview" id="preview-military"></div>
+                <canvas class="character-preview" id="preview-military" width="60" height="60"></canvas>
                 <span>🪖 Soldier</span>
             </div>
             <div class="character-option" data-character="dog" onclick="selectCharacter('dog')">
-                <div class="character-preview" id="preview-dog"></div>
+                <canvas class="character-preview" id="preview-dog" width="60" height="60"></canvas>
                 <span>🐕 Emma</span>
             </div>
         </div>
+    </div>
+
+    <!-- Power-Up Shop -->
+    <div class="shop-container" id="shopContainer" style="display: none;">
+        <h3>⚡ Power-Up Shop</h3>
+        <p style="font-size: 0.9em; margin: 5px 0;">Unlocked at Score 50!</p>
+        <div class="shop-items">
+            <div class="shop-item" data-powerup="speed" onclick="buyPowerUp('speed')">
+                <div class="shop-item-name">🚀 Speed Boost</div>
+                <div class="shop-item-desc">+0.9% Speed</div>
+                <div class="shop-item-cost">💰 1 Coin</div>
+            </div>
+            <div class="shop-item" data-powerup="freeze" onclick="buyPowerUp('freeze')">
+                <div class="shop-item-name">❄️ Freeze Time</div>
+                <div class="shop-item-desc">Stop cars for 4 seconds</div>
+                <div class="shop-item-cost">💰 1 Coin</div>
+            </div>
+            <div class="shop-item" data-powerup="lives" onclick="buyPowerUp('lives')">
+                <div class="shop-item-name">❤️ Extra Lives</div>
+                <div class="shop-item-desc">+2 Lives</div>
+                <div class="shop-item-cost">💰 2 Coins</div>
+            </div>
+            <div class="shop-item" data-powerup="airstrike" onclick="buyPowerUp('airstrike')">
+                <div class="shop-item-name">💣 Airstrike</div>
+                <div class="shop-item-desc">Clear all cars for 9 seconds</div>
+                <div class="shop-item-cost">💰 4 Coins</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Airstrike Code Input Panel -->
+    <div class="airstrike-panel" id="airstrikePanel" style="display: none;">
+        <h4>🎯 AIRSTRIKE READY</h4>
+        <div class="airstrike-code-display">6741</div>
+        <p style="color: rgba(255,255,255,0.7); font-size: 0.9em; margin: 10px 0;">Type the code:</p>
+        <div class="airstrike-input-display" id="airstrikeInput"></div>
+    </div>
+
+    <!-- Airstrike Incoming Message -->
+    <div class="airstrike-message" id="airstrikeMessage" style="display: none;">
+        ⚠️ AIRSTRIKE INCOMING ⚠️
     </div>
 
     <div class="game-over" id="gameOver">
@@ -833,6 +1044,22 @@
         let dogSpeedBoost = 1.008; // Emma (dog) is 0.8% faster (multiply movement by this)
         let militaryKnockedDown = false; // Military is knocked down after getting hit
         let militaryKnockdownTimer = 0; // Timer for knockdown animation
+
+        // Shop and Power-ups
+        let shopUnlocked = false; // Shop unlocks at score 50
+        let powerUpSpeedBoost = 1.0; // Speed boost multiplier (1.009 when active)
+        let powerUpSpeedBoostActive = false;
+        let powerUpFreezeTime = false;
+        let powerUpFreezeUntil = 0;
+        let powerUpExtraLives = 0; // Additional lives from power-up
+        let powerUpAirstrikeOwned = false;
+        let powerUpAirstrikeActive = false;
+        let airstrikeAnimating = false;
+        let airstrikeY = 0; // Missile Y position
+        let airstrikeExplosionTime = 0;
+        let carsGoneUntil = 0; // Timestamp when cars should respawn after airstrike
+        let airstrikeCodeEntered = false;
+        let airstrikeCodeInput = '';
 
         // Game Settings (configurable) - MUST BE DEFINED FIRST
         let gameSettings = {
@@ -1060,7 +1287,11 @@
             // Smooth player position interpolation (with dog speed boost if applicable)
             let playerLerpFactor = 0.25;
             if (selectedCharacter === 'dog') {
-                playerLerpFactor *= dogSpeedBoost; // Dog moves 0.4% faster
+                playerLerpFactor *= dogSpeedBoost; // Dog moves 0.8% faster
+            }
+            // Apply speed boost power-up
+            if (powerUpSpeedBoostActive) {
+                playerLerpFactor *= powerUpSpeedBoost; // 0.9% speed boost
             }
             player.renderX += (player.x - player.renderX) * playerLerpFactor;
             player.renderWorldY += (player.worldY - player.renderWorldY) * playerLerpFactor;
@@ -1207,8 +1438,8 @@
             // Move cars with delta time for smooth frame-independent movement
             const timeScale = deltaTime / 16.67; // Normalize to 60fps
 
-            // Check if cars should be stopped (goose honk power)
-            const carsShouldStop = Date.now() < carsStoppedUntil;
+            // Check if cars should be stopped (goose honk power or freeze time power-up)
+            const carsShouldStop = Date.now() < carsStoppedUntil || powerUpFreezeTime;
 
             if (!carsShouldStop) {
                 cars.forEach(car => {
@@ -1242,6 +1473,84 @@
 
             // Clean up old collected coins and coins far behind the player
             coinObjects = coinObjects.filter(coin => !coin.collected && coin.y > cameraY - 5);
+
+            // Shop unlock at score 50
+            if (score >= 50 && !shopUnlocked) {
+                shopUnlocked = true;
+                document.getElementById('shopContainer').style.display = 'block';
+            }
+
+            // Update freeze time power-up
+            if (powerUpFreezeTime && Date.now() >= powerUpFreezeUntil) {
+                powerUpFreezeTime = false;
+            }
+
+            // Update airstrike animation
+            if (airstrikeAnimating) {
+                airstrikeY += deltaTime * 1.5; // Fast missile speed
+
+                // Check if missile reached bottom
+                if (airstrikeY >= canvas.height + 50) {
+                    // Explosion! Remove all cars
+                    airstrikeAnimating = false;
+                    airstrikeExplosionTime = Date.now();
+                    carsGoneUntil = Date.now() + 9000; // Cars gone for 9 seconds
+                    cars = []; // Clear all cars
+                    powerUpAirstrikeActive = true;
+
+                    // Reset airstrike ownership so player can buy again
+                    powerUpAirstrikeOwned = false;
+                    const airstrikeShopItem = document.querySelector('[data-powerup="airstrike"]');
+                    if (airstrikeShopItem) {
+                        airstrikeShopItem.classList.remove('purchased');
+                    }
+                }
+            }
+
+            // Respawn cars after airstrike
+            if (powerUpAirstrikeActive && Date.now() >= carsGoneUntil) {
+                powerUpAirstrikeActive = false;
+                // Regenerate cars for existing roads
+                roads.forEach(road => {
+                    if (road.laneCount > 1) {
+                        // Multi-lane road
+                        road.lanes = [];
+                        for (let i = 0; i < road.laneCount; i++) {
+                            const laneDirection = (i % 2 === 0) ? 1 : -1;
+                            const vehicleCount = Math.floor(Math.random() * 2) + 1;
+                            const vehicles = [];
+
+                            for (let v = 0; v < vehicleCount; v++) {
+                                const vehicleType = getRandomVehicleType();
+                                const vehicleX = (Math.random() * COLS * 2) - COLS;
+                                vehicles.push({
+                                    x: vehicleX,
+                                    type: vehicleType.type,
+                                    width: vehicleType.width,
+                                    speed: (Math.random() * 0.03 + 0.02) * laneDirection,
+                                    color: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#FFD93D'][Math.floor(Math.random() * 6)]
+                                });
+                            }
+
+                            road.lanes.push({
+                                direction: laneDirection,
+                                vehicles: vehicles
+                            });
+                        }
+
+                        // Flatten vehicles for main cars array
+                        road.lanes.forEach((lane, laneIndex) => {
+                            lane.vehicles.forEach(vehicle => {
+                                cars.push({
+                                    ...vehicle,
+                                    y: road.row + laneIndex,
+                                    lane: laneIndex
+                                });
+                            });
+                        });
+                    }
+                });
+            }
 
             // Check collision
             checkCollision();
@@ -1359,6 +1668,94 @@
             // Draw player (chicken) with camera offset using smooth render positions and hop offset
             const playerScreenY = (player.renderWorldY - cameraY) * GRID_SIZE;
             drawCharacter(player.renderX * GRID_SIZE + GRID_SIZE / 2, playerScreenY + GRID_SIZE / 2 - player.hopHeight, isFlying);
+
+            // Draw airstrike missile
+            if (airstrikeAnimating) {
+                const missileX = canvas.width / 2;
+                const missileY = airstrikeY;
+                const missileWidth = 30;
+                const missileHeight = 80;
+
+                // Missile body
+                ctx.fillStyle = '#2a2a2a';
+                ctx.beginPath();
+                ctx.moveTo(missileX, missileY - missileHeight / 2);
+                ctx.lineTo(missileX - missileWidth / 2, missileY + missileHeight / 3);
+                ctx.lineTo(missileX + missileWidth / 2, missileY + missileHeight / 3);
+                ctx.closePath();
+                ctx.fill();
+
+                // Missile body rectangle
+                ctx.fillStyle = '#4a4a4a';
+                ctx.fillRect(missileX - missileWidth / 2, missileY - missileHeight / 3, missileWidth, missileHeight / 2);
+
+                // Red warhead
+                ctx.fillStyle = '#dc2626';
+                ctx.beginPath();
+                ctx.moveTo(missileX, missileY - missileHeight / 2);
+                ctx.lineTo(missileX - missileWidth / 3, missileY - missileHeight / 6);
+                ctx.lineTo(missileX + missileWidth / 3, missileY - missileHeight / 6);
+                ctx.closePath();
+                ctx.fill();
+
+                // Fins
+                ctx.fillStyle = '#666666';
+                ctx.beginPath();
+                ctx.moveTo(missileX - missileWidth / 2, missileY + missileHeight / 4);
+                ctx.lineTo(missileX - missileWidth, missileY + missileHeight / 3);
+                ctx.lineTo(missileX - missileWidth / 2, missileY + missileHeight / 3);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.moveTo(missileX + missileWidth / 2, missileY + missileHeight / 4);
+                ctx.lineTo(missileX + missileWidth, missileY + missileHeight / 3);
+                ctx.lineTo(missileX + missileWidth / 2, missileY + missileHeight / 3);
+                ctx.closePath();
+                ctx.fill();
+
+                // Flame trail
+                ctx.fillStyle = '#ff4444';
+                ctx.beginPath();
+                ctx.arc(missileX, missileY + missileHeight / 3, 15, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#ffaa00';
+                ctx.beginPath();
+                ctx.arc(missileX, missileY + missileHeight / 3, 10, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#ffff00';
+                ctx.beginPath();
+                ctx.arc(missileX, missileY + missileHeight / 3, 5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Draw explosion effect for 2 seconds after impact
+            const timeSinceExplosion = Date.now() - airstrikeExplosionTime;
+            if (powerUpAirstrikeActive && timeSinceExplosion < 2000) {
+                const explosionProgress = timeSinceExplosion / 2000;
+                const explosionRadius = 200 * (1 - explosionProgress) + 500 * explosionProgress;
+                const explosionAlpha = 1 - explosionProgress;
+
+                // Multiple explosion circles
+                for (let i = 0; i < 3; i++) {
+                    const offset = i * 100;
+                    const radius = explosionRadius - offset;
+
+                    if (i === 0) {
+                        ctx.fillStyle = `rgba(255, 68, 68, ${explosionAlpha * 0.6})`;
+                    } else if (i === 1) {
+                        ctx.fillStyle = `rgba(255, 170, 0, ${explosionAlpha * 0.4})`;
+                    } else {
+                        ctx.fillStyle = `rgba(255, 255, 0, ${explosionAlpha * 0.2})`;
+                    }
+
+                    ctx.beginPath();
+                    ctx.arc(canvas.width / 2, canvas.height / 2, radius, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
         }
 
         // Helper function to darken a color for night time
@@ -2115,36 +2512,52 @@
             ctx.arc(x + size * 0.2, y - size * 0.92, size * 0.05, 0, Math.PI * 2);
             ctx.fill();
 
-            // Tiny legs (orange, thin and cute)
+            // Running animation for chick legs
+            const chickRunCycle = (Date.now() / 120) % (Math.PI * 2); // Fast waddle
+            const chickLegSwing = Math.sin(chickRunCycle) * 0.2;
+
+            // Tiny legs (orange, thin and cute) with running motion
             ctx.strokeStyle = '#FF8C00';
             ctx.lineWidth = 2.5;
             ctx.lineCap = 'round';
+
+            // Left leg
             ctx.beginPath();
             ctx.moveTo(x - size * 0.25, y + size * 0.7);
-            ctx.lineTo(x - size * 0.25, y + size * 1.0);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(x + size * 0.25, y + size * 0.7);
-            ctx.lineTo(x + size * 0.25, y + size * 1.0);
+            ctx.lineTo(x - size * 0.25 - chickLegSwing * size * 0.15, y + size * 1.0 + Math.abs(chickLegSwing) * size * 0.08);
             ctx.stroke();
 
-            // Tiny feet
+            // Right leg
+            ctx.beginPath();
+            ctx.moveTo(x + size * 0.25, y + size * 0.7);
+            ctx.lineTo(x + size * 0.25 + chickLegSwing * size * 0.15, y + size * 1.0 + Math.abs(chickLegSwing) * size * 0.08);
+            ctx.stroke();
+
+            // Tiny feet with running motion
             ctx.lineWidth = 2;
+
+            // Left foot toes
+            const leftFootX = x - size * 0.25 - chickLegSwing * size * 0.15;
+            const leftFootY = y + size * 1.0 + Math.abs(chickLegSwing) * size * 0.08;
             ctx.beginPath();
-            ctx.moveTo(x - size * 0.25, y + size * 1.0);
-            ctx.lineTo(x - size * 0.4, y + size * 1.05);
+            ctx.moveTo(leftFootX, leftFootY);
+            ctx.lineTo(leftFootX - size * 0.15, leftFootY + size * 0.05);
             ctx.stroke();
             ctx.beginPath();
-            ctx.moveTo(x - size * 0.25, y + size * 1.0);
-            ctx.lineTo(x - size * 0.15, y + size * 1.05);
+            ctx.moveTo(leftFootX, leftFootY);
+            ctx.lineTo(leftFootX + size * 0.1, leftFootY + size * 0.05);
+            ctx.stroke();
+
+            // Right foot toes
+            const rightFootX = x + size * 0.25 + chickLegSwing * size * 0.15;
+            const rightFootY = y + size * 1.0 + Math.abs(chickLegSwing) * size * 0.08;
+            ctx.beginPath();
+            ctx.moveTo(rightFootX, rightFootY);
+            ctx.lineTo(rightFootX - size * 0.1, rightFootY + size * 0.05);
             ctx.stroke();
             ctx.beginPath();
-            ctx.moveTo(x + size * 0.25, y + size * 1.0);
-            ctx.lineTo(x + size * 0.15, y + size * 1.05);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(x + size * 0.25, y + size * 1.0);
-            ctx.lineTo(x + size * 0.4, y + size * 1.05);
+            ctx.moveTo(rightFootX, rightFootY);
+            ctx.lineTo(rightFootX + size * 0.15, rightFootY + size * 0.05);
             ctx.stroke();
 
             // Cute cheek blush (optional)
@@ -2238,33 +2651,49 @@
             ctx.arc(x + size * 0.5, y - size * 1.05, size * 0.08, 0, Math.PI * 2);
             ctx.fill();
 
-            // Legs (orange)
+            // Running animation for goose legs (waddling motion)
+            const gooseRunCycle = (Date.now() / 140) % (Math.PI * 2);
+            const gooseLegSwing = Math.sin(gooseRunCycle) * 0.22;
+
+            // Legs (orange) with waddle
             ctx.strokeStyle = '#FF8C00';
             ctx.lineWidth = 3;
             ctx.lineCap = 'round';
+
+            // Left leg
             ctx.beginPath();
             ctx.moveTo(x - size * 0.2, y + size * 0.9);
-            ctx.lineTo(x - size * 0.2, y + size * 1.2);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(x + size * 0.2, y + size * 0.9);
-            ctx.lineTo(x + size * 0.2, y + size * 1.2);
+            ctx.lineTo(x - size * 0.2 - gooseLegSwing * size * 0.18, y + size * 1.2 + Math.abs(gooseLegSwing) * size * 0.1);
             ctx.stroke();
 
-            // Webbed feet
-            ctx.fillStyle = '#FF8C00';
+            // Right leg
             ctx.beginPath();
-            ctx.moveTo(x - size * 0.2, y + size * 1.2);
-            ctx.lineTo(x - size * 0.4, y + size * 1.25);
-            ctx.lineTo(x - size * 0.2, y + size * 1.3);
-            ctx.lineTo(x, y + size * 1.25);
+            ctx.moveTo(x + size * 0.2, y + size * 0.9);
+            ctx.lineTo(x + size * 0.2 + gooseLegSwing * size * 0.18, y + size * 1.2 + Math.abs(gooseLegSwing) * size * 0.1);
+            ctx.stroke();
+
+            // Webbed feet with running motion
+            ctx.fillStyle = '#FF8C00';
+
+            // Left foot
+            const leftFootX = x - size * 0.2 - gooseLegSwing * size * 0.18;
+            const leftFootY = y + size * 1.2 + Math.abs(gooseLegSwing) * size * 0.1;
+            ctx.beginPath();
+            ctx.moveTo(leftFootX, leftFootY);
+            ctx.lineTo(leftFootX - size * 0.2, leftFootY + size * 0.05);
+            ctx.lineTo(leftFootX, leftFootY + size * 0.1);
+            ctx.lineTo(leftFootX + size * 0.2, leftFootY + size * 0.05);
             ctx.closePath();
             ctx.fill();
+
+            // Right foot
+            const rightFootX = x + size * 0.2 + gooseLegSwing * size * 0.18;
+            const rightFootY = y + size * 1.2 + Math.abs(gooseLegSwing) * size * 0.1;
             ctx.beginPath();
-            ctx.moveTo(x + size * 0.2, y + size * 1.2);
-            ctx.lineTo(x, y + size * 1.25);
-            ctx.lineTo(x + size * 0.2, y + size * 1.3);
-            ctx.lineTo(x + size * 0.4, y + size * 1.25);
+            ctx.moveTo(rightFootX, rightFootY);
+            ctx.lineTo(rightFootX - size * 0.2, rightFootY + size * 0.05);
+            ctx.lineTo(rightFootX, rightFootY + size * 0.1);
+            ctx.lineTo(rightFootX + size * 0.2, rightFootY + size * 0.05);
             ctx.closePath();
             ctx.fill();
         }
@@ -2273,9 +2702,12 @@
         function drawGhost(x, y, flying = false) {
             const size = GRID_SIZE / 2 - 2;
 
-            // Floating effect (ghosts always float)
-            const floatOffset = Math.sin(Date.now() / 300) * 5;
+            // Floating effect (ghosts always float) with sway motion
+            const floatCycle = Date.now() / 300;
+            const floatOffset = Math.sin(floatCycle) * 5;
+            const swayOffset = Math.sin(floatCycle * 1.3) * 3; // Horizontal sway for movement effect
             y -= floatOffset;
+            x += swayOffset;
 
             // Shadow (subtle for ghost)
             ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
@@ -2325,7 +2757,7 @@
             ctx.globalAlpha = 1;
         }
 
-        // Draw a military soldier
+        // Draw a realistic military soldier
         function drawMilitary(x, y, flying = false) {
             const size = GRID_SIZE / 2 - 2;
 
@@ -2348,12 +2780,11 @@
                 ctx.translate(x, y + yOffset);
                 ctx.rotate(rotation);
 
-                // Body (military green uniform)
-                ctx.fillStyle = '#4A5D23';
+                // Draw simplified knocked down soldier (use camo colors)
+                ctx.fillStyle = '#5C5843';
                 ctx.fillRect(-size * 0.5, -size * 0.2, size, size * 1.3);
 
-                // Arms (spread out when knocked down)
-                ctx.strokeStyle = '#4A5D23';
+                ctx.strokeStyle = '#5C5843';
                 ctx.lineWidth = 8;
                 ctx.lineCap = 'round';
                 ctx.beginPath();
@@ -2365,21 +2796,17 @@
                 ctx.lineTo(size * 0.8, size * 0.5);
                 ctx.stroke();
 
-                // Head (skin tone)
-                ctx.fillStyle = '#D2A679';
+                ctx.fillStyle = '#C29B7A';
                 ctx.beginPath();
                 ctx.arc(0, -size * 0.6, size * 0.55, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Military helmet
-                ctx.fillStyle = '#3D4A1F';
+                ctx.fillStyle = '#5C5843';
                 ctx.beginPath();
                 ctx.ellipse(0, -size * 0.9, size * 0.65, size * 0.4, 0, 0, Math.PI);
                 ctx.fill();
 
-                // Eyes (closed if just hit, opening as getting up)
                 if (knockdownProgress < 0.5) {
-                    // Eyes closed (lines)
                     ctx.strokeStyle = 'black';
                     ctx.lineWidth = 2;
                     ctx.beginPath();
@@ -2391,7 +2818,6 @@
                     ctx.lineTo(size * 0.3, -size * 0.6);
                     ctx.stroke();
                 } else {
-                    // Eyes opening
                     ctx.fillStyle = 'white';
                     ctx.beginPath();
                     ctx.arc(-size * 0.2, -size * 0.6, size * 0.12, 0, Math.PI * 2);
@@ -2400,8 +2826,7 @@
                     ctx.arc(size * 0.2, -size * 0.6, size * 0.12, 0, Math.PI * 2);
                     ctx.fill();
 
-                    // Pupils
-                    ctx.fillStyle = 'black';
+                    ctx.fillStyle = '#3D2817';
                     ctx.beginPath();
                     ctx.arc(-size * 0.18, -size * 0.6, size * 0.06, 0, Math.PI * 2);
                     ctx.fill();
@@ -2410,8 +2835,7 @@
                     ctx.fill();
                 }
 
-                // Legs (green pants)
-                ctx.strokeStyle = '#4A5D23';
+                ctx.strokeStyle = '#5C5843';
                 ctx.lineWidth = 10;
                 ctx.beginPath();
                 ctx.moveTo(-size * 0.2, size * 0.9);
@@ -2422,8 +2846,7 @@
                 ctx.lineTo(size * 0.2, size * 1.3);
                 ctx.stroke();
 
-                // Boots (black)
-                ctx.fillStyle = 'black';
+                ctx.fillStyle = '#2C2416';
                 ctx.fillRect(-size * 0.35, size * 1.2, size * 0.3, size * 0.2);
                 ctx.fillRect(size * 0.05, size * 1.2, size * 0.3, size * 0.2);
 
@@ -2431,7 +2854,7 @@
                 return;
             }
 
-            // Normal standing soldier (when not knocked down)
+            // Normal standing soldier - REALISTIC VERSION
             // Shadow
             if (flying) {
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
@@ -2441,73 +2864,239 @@
             } else {
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
                 ctx.beginPath();
-                ctx.ellipse(x, y + size + 2, size * 0.7, size * 0.3, 0, 0, Math.PI * 2);
+                ctx.ellipse(x, y + size + 2, size * 0.8, size * 0.3, 0, 0, Math.PI * 2);
                 ctx.fill();
             }
 
-            // Body (military green uniform)
-            ctx.fillStyle = '#4A5D23';
-            ctx.fillRect(x - size * 0.5, y - size * 0.2, size, size * 1.3);
+            // Neck
+            ctx.fillStyle = '#B8916D';
+            ctx.fillRect(x - size * 0.2, y - size * 0.25, size * 0.4, size * 0.35);
 
-            // Arms
-            ctx.strokeStyle = '#4A5D23';
-            ctx.lineWidth = 8;
+            // Torso - Camouflage uniform jacket (base tan)
+            const torsoGradient = ctx.createLinearGradient(x - size * 0.6, y, x + size * 0.6, y);
+            torsoGradient.addColorStop(0, '#6B6650');
+            torsoGradient.addColorStop(0.5, '#5C5843');
+            torsoGradient.addColorStop(1, '#6B6650');
+            ctx.fillStyle = torsoGradient;
+            ctx.fillRect(x - size * 0.6, y - size * 0.1, size * 1.2, size * 1.1);
+
+            // Camouflage pattern on torso (darker spots)
+            ctx.fillStyle = '#4A4731';
+            ctx.beginPath();
+            ctx.arc(x - size * 0.3, y + size * 0.2, size * 0.25, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + size * 0.35, y + size * 0.5, size * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + size * 0.1, y + size * 0.7, size * 0.2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Camouflage pattern (lighter tan spots)
+            ctx.fillStyle = '#736B52';
+            ctx.beginPath();
+            ctx.arc(x + size * 0.2, y + size * 0.1, size * 0.2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x - size * 0.4, y + size * 0.6, size * 0.25, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Body armor/vest detail (darker rectangular shape)
+            ctx.fillStyle = 'rgba(50, 50, 45, 0.5)';
+            ctx.fillRect(x - size * 0.45, y + size * 0.1, size * 0.9, size * 0.7);
+
+            // Chest pockets
+            ctx.strokeStyle = '#3D3A2F';
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(x - size * 0.35, y + size * 0.3, size * 0.3, size * 0.25);
+            ctx.strokeRect(x + size * 0.05, y + size * 0.3, size * 0.3, size * 0.25);
+
+            // Running animation - arms and legs swing
+            const runCycle = (Date.now() / 150) % (Math.PI * 2); // Running animation speed
+            const armSwing = Math.sin(runCycle) * 0.3; // Arm swing angle
+            const legSwing = Math.sin(runCycle) * 0.25; // Leg swing angle
+
+            // Left arm (swings opposite to right leg)
+            ctx.strokeStyle = '#5C5843';
+            ctx.lineWidth = 9;
             ctx.lineCap = 'round';
             ctx.beginPath();
-            ctx.moveTo(x - size * 0.5, y);
-            ctx.lineTo(x - size * 0.8, y + size * 0.5);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(x + size * 0.5, y);
-            ctx.lineTo(x + size * 0.8, y + size * 0.5);
+            ctx.moveTo(x - size * 0.6, y + size * 0.1);
+            ctx.lineTo(x - size * 0.85 + armSwing * size * 0.3, y + size * 0.7 - Math.abs(armSwing) * size * 0.2);
             ctx.stroke();
 
-            // Head (skin tone)
-            ctx.fillStyle = '#D2A679';
+            // Right arm (swings opposite to left leg)
             ctx.beginPath();
-            ctx.arc(x, y - size * 0.6, size * 0.55, 0, Math.PI * 2);
+            ctx.moveTo(x + size * 0.6, y + size * 0.1);
+            ctx.lineTo(x + size * 0.85 - armSwing * size * 0.3, y + size * 0.7 - Math.abs(armSwing) * size * 0.2);
+            ctx.stroke();
+
+            // Left hand (skin tone)
+            ctx.fillStyle = '#C29B7A';
+            ctx.beginPath();
+            ctx.arc(x - size * 0.85 + armSwing * size * 0.3, y + size * 0.7 - Math.abs(armSwing) * size * 0.2, size * 0.15, 0, Math.PI * 2);
             ctx.fill();
 
-            // Military helmet
-            ctx.fillStyle = '#3D4A1F';
+            // Right hand
             ctx.beginPath();
-            ctx.ellipse(x, y - size * 0.9, size * 0.65, size * 0.4, 0, 0, Math.PI);
+            ctx.arc(x + size * 0.85 - armSwing * size * 0.3, y + size * 0.7 - Math.abs(armSwing) * size * 0.2, size * 0.15, 0, Math.PI * 2);
             ctx.fill();
 
-            // Eyes
+            // Left leg with running motion
+            ctx.strokeStyle = '#5C5843';
+            ctx.lineWidth = 11;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(x - size * 0.25, y + size * 1.0);
+            ctx.lineTo(x - size * 0.25 - legSwing * size * 0.15, y + size * 1.5 + Math.abs(legSwing) * size * 0.1);
+            ctx.stroke();
+
+            // Right leg with running motion
+            ctx.beginPath();
+            ctx.moveTo(x + size * 0.25, y + size * 1.0);
+            ctx.lineTo(x + size * 0.25 + legSwing * size * 0.15, y + size * 1.5 + Math.abs(legSwing) * size * 0.1);
+            ctx.stroke();
+
+            // Left knee pad
+            ctx.fillStyle = '#3D3A2F';
+            ctx.beginPath();
+            ctx.arc(x - size * 0.25 - legSwing * size * 0.08, y + size * 1.2, size * 0.15, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Right knee pad
+            ctx.beginPath();
+            ctx.arc(x + size * 0.25 + legSwing * size * 0.08, y + size * 1.2, size * 0.15, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Left boot (tan/brown)
+            ctx.fillStyle = '#6B5230';
+            ctx.save();
+            ctx.translate(x - size * 0.28 - legSwing * size * 0.15, y + size * 1.57 + Math.abs(legSwing) * size * 0.1);
+            ctx.rotate(legSwing * 0.15);
+            ctx.fillRect(-size * 0.11, 0, size * 0.22, size * 0.25);
+            ctx.restore();
+
+            // Right boot
+            ctx.save();
+            ctx.translate(x + size * 0.22 + legSwing * size * 0.15, y + size * 1.57 + Math.abs(legSwing) * size * 0.1);
+            ctx.rotate(-legSwing * 0.15);
+            ctx.fillRect(-size * 0.11, 0, size * 0.22, size * 0.25);
+            ctx.restore();
+
+            // Left boot sole (dark)
+            ctx.fillStyle = '#2C2416';
+            ctx.save();
+            ctx.translate(x - size * 0.28 - legSwing * size * 0.15, y + size * 1.7 + Math.abs(legSwing) * size * 0.1);
+            ctx.rotate(legSwing * 0.15);
+            ctx.fillRect(-size * 0.11, 0, size * 0.22, size * 0.05);
+            ctx.restore();
+
+            // Right boot sole
+            ctx.save();
+            ctx.translate(x + size * 0.22 + legSwing * size * 0.15, y + size * 1.7 + Math.abs(legSwing) * size * 0.1);
+            ctx.rotate(-legSwing * 0.15);
+            ctx.fillRect(-size * 0.11, 0, size * 0.22, size * 0.05);
+            ctx.restore();
+
+            // Head (realistic skin tone)
+            ctx.fillStyle = '#C29B7A';
+            ctx.beginPath();
+            ctx.arc(x, y - size * 0.5, size * 0.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Ear
+            ctx.fillStyle = '#B8916D';
+            ctx.beginPath();
+            ctx.ellipse(x + size * 0.45, y - size * 0.45, size * 0.12, size * 0.18, 0.3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Military helmet with camo pattern
+            ctx.fillStyle = '#5C5843';
+            ctx.beginPath();
+            ctx.ellipse(x, y - size * 0.8, size * 0.62, size * 0.45, 0, 0, Math.PI);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(x, y - size * 0.35, size * 0.65, size * 0.25, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Helmet camo spots
+            ctx.fillStyle = '#4A4731';
+            ctx.beginPath();
+            ctx.arc(x - size * 0.35, y - size * 0.7, size * 0.2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + size * 0.3, y - size * 0.65, size * 0.18, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Helmet rim/brim
+            ctx.fillStyle = '#3D3A2F';
+            ctx.fillRect(x - size * 0.65, y - size * 0.38, size * 1.3, size * 0.12);
+
+            // Chin strap
+            ctx.strokeStyle = '#4A4731';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(x, y - size * 0.1, size * 0.45, 0.4, Math.PI - 0.4);
+            ctx.stroke();
+
+            // Eyebrows
+            ctx.strokeStyle = '#654321';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(x - size * 0.35, y - size * 0.6);
+            ctx.lineTo(x - size * 0.15, y - size * 0.62);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x + size * 0.15, y - size * 0.62);
+            ctx.lineTo(x + size * 0.35, y - size * 0.6);
+            ctx.stroke();
+
+            // Eyes (alert and focused)
             ctx.fillStyle = 'white';
             ctx.beginPath();
-            ctx.arc(x - size * 0.2, y - size * 0.6, size * 0.12, 0, Math.PI * 2);
+            ctx.ellipse(x - size * 0.22, y - size * 0.5, size * 0.13, size * 0.11, 0, 0, Math.PI * 2);
             ctx.fill();
             ctx.beginPath();
-            ctx.arc(x + size * 0.2, y - size * 0.6, size * 0.12, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Pupils
-            ctx.fillStyle = 'black';
-            ctx.beginPath();
-            ctx.arc(x - size * 0.18, y - size * 0.6, size * 0.06, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(x + size * 0.22, y - size * 0.6, size * 0.06, 0, Math.PI * 2);
+            ctx.ellipse(x + size * 0.22, y - size * 0.5, size * 0.13, size * 0.11, 0, 0, Math.PI * 2);
             ctx.fill();
 
-            // Legs (green pants)
-            ctx.strokeStyle = '#4A5D23';
-            ctx.lineWidth = 10;
+            // Pupils (brown)
+            ctx.fillStyle = '#3D2817';
             ctx.beginPath();
-            ctx.moveTo(x - size * 0.2, y + size * 0.9);
-            ctx.lineTo(x - size * 0.2, y + size * 1.3);
+            ctx.arc(x - size * 0.22, y - size * 0.5, size * 0.08, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + size * 0.22, y - size * 0.5, size * 0.08, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Eye highlights
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.beginPath();
+            ctx.arc(x - size * 0.19, y - size * 0.53, size * 0.03, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + size * 0.25, y - size * 0.53, size * 0.03, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Nose
+            ctx.strokeStyle = '#A88160';
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(x, y - size * 0.4);
+            ctx.lineTo(x - size * 0.06, y - size * 0.25);
             ctx.stroke();
             ctx.beginPath();
-            ctx.moveTo(x + size * 0.2, y + size * 0.9);
-            ctx.lineTo(x + size * 0.2, y + size * 1.3);
+            ctx.arc(x - size * 0.08, y - size * 0.23, size * 0.04, 0, Math.PI * 2);
             ctx.stroke();
 
-            // Boots (black)
-            ctx.fillStyle = 'black';
-            ctx.fillRect(x - size * 0.35, y + size * 1.2, size * 0.3, size * 0.2);
-            ctx.fillRect(x + size * 0.05, y + size * 1.2, size * 0.3, size * 0.2);
+            // Mouth (serious/neutral)
+            ctx.strokeStyle = '#8B6B54';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(x - size * 0.15, y - size * 0.15);
+            ctx.lineTo(x + size * 0.15, y - size * 0.15);
+            ctx.stroke();
         }
 
         // Draw a spotted dog
@@ -2658,7 +3247,12 @@
             ctx.arc(x + size * 0.49, y - size * 0.81, size * 0.03, 0, Math.PI * 2);
             ctx.fill();
 
-            // Legs (white with subtle shading)
+            // Running animation for dog legs (galloping motion)
+            const dogRunCycle = (Date.now() / 100) % (Math.PI * 2); // Fast running
+            const frontLegSwing = Math.sin(dogRunCycle) * 0.25;
+            const backLegSwing = Math.sin(dogRunCycle + Math.PI) * 0.25; // Back legs opposite to front
+
+            // Legs (white with subtle shading) with running motion
             ctx.strokeStyle = '#F0F0F0';
             ctx.lineWidth = 5;
             ctx.lineCap = 'round';
@@ -2666,34 +3260,49 @@
             // Front left leg
             ctx.beginPath();
             ctx.moveTo(x - size * 0.35, y + size * 0.55);
-            ctx.lineTo(x - size * 0.35, y + size * 0.95);
+            ctx.lineTo(x - size * 0.35 - frontLegSwing * size * 0.15, y + size * 0.95 + Math.abs(frontLegSwing) * size * 0.1);
             ctx.stroke();
 
-            // Front right leg
+            // Front right leg (opposite phase)
             ctx.beginPath();
             ctx.moveTo(x - size * 0.05, y + size * 0.55);
-            ctx.lineTo(x - size * 0.05, y + size * 0.95);
+            ctx.lineTo(x - size * 0.05 + frontLegSwing * size * 0.15, y + size * 0.95 + Math.abs(frontLegSwing) * size * 0.1);
             ctx.stroke();
 
-            // Back left leg
+            // Back left leg (opposite to front legs)
             ctx.beginPath();
             ctx.moveTo(x + size * 0.25, y + size * 0.55);
-            ctx.lineTo(x + size * 0.25, y + size * 0.95);
+            ctx.lineTo(x + size * 0.25 - backLegSwing * size * 0.15, y + size * 0.95 + Math.abs(backLegSwing) * size * 0.1);
             ctx.stroke();
 
             // Back right leg
             ctx.beginPath();
             ctx.moveTo(x + size * 0.5, y + size * 0.55);
-            ctx.lineTo(x + size * 0.5, y + size * 0.95);
+            ctx.lineTo(x + size * 0.5 + backLegSwing * size * 0.15, y + size * 0.95 + Math.abs(backLegSwing) * size * 0.1);
             ctx.stroke();
 
-            // Paws (dark gray, realistic)
+            // Paws (dark gray, realistic) with running motion
             ctx.fillStyle = '#555555';
-            ['-0.35', '-0.05', '0.25', '0.5'].forEach((offset) => {
-                ctx.beginPath();
-                ctx.ellipse(x + size * parseFloat(offset), y + size * 0.95, size * 0.12, size * 0.08, 0, 0, Math.PI * 2);
-                ctx.fill();
-            });
+
+            // Front left paw
+            ctx.beginPath();
+            ctx.ellipse(x - size * 0.35 - frontLegSwing * size * 0.15, y + size * 0.95 + Math.abs(frontLegSwing) * size * 0.1, size * 0.12, size * 0.08, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Front right paw
+            ctx.beginPath();
+            ctx.ellipse(x - size * 0.05 + frontLegSwing * size * 0.15, y + size * 0.95 + Math.abs(frontLegSwing) * size * 0.1, size * 0.12, size * 0.08, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Back left paw
+            ctx.beginPath();
+            ctx.ellipse(x + size * 0.25 - backLegSwing * size * 0.15, y + size * 0.95 + Math.abs(backLegSwing) * size * 0.1, size * 0.12, size * 0.08, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Back right paw
+            ctx.beginPath();
+            ctx.ellipse(x + size * 0.5 + backLegSwing * size * 0.15, y + size * 0.95 + Math.abs(backLegSwing) * size * 0.1, size * 0.12, size * 0.08, 0, 0, Math.PI * 2);
+            ctx.fill();
 
             // Wagging tail (curved and fluffy)
             const tailWag = Math.sin(Date.now() / 100) * 0.35;
@@ -3452,6 +4061,15 @@
         }
 
         function endGame() {
+            // Check if player has extra lives from power-up
+            if (powerUpExtraLives > 0) {
+                powerUpExtraLives--;
+                // Reset player position to safe location
+                player.worldY = player.worldY + 2; // Move back 2 rows
+                player.renderWorldY = player.worldY;
+                return; // Don't end game, continue playing
+            }
+
             gameOver = true;
 
             if (score > highScore) {
@@ -3761,13 +4379,125 @@
             }
         }
 
-        // Render character previews
+        // Shop Functions
+        function buyPowerUp(powerUpType) {
+            const shopContainer = document.getElementById('shopContainer');
+            const shopItem = document.querySelector(`[data-powerup="${powerUpType}"]`);
+
+            // Check if already purchased
+            if (shopItem && shopItem.classList.contains('purchased')) {
+                return;
+            }
+
+            // Power-up costs
+            const costs = {
+                'speed': 1,
+                'freeze': 1,
+                'lives': 2,
+                'airstrike': 4
+            };
+
+            const cost = costs[powerUpType];
+
+            // Check if player has enough coins
+            if (coins < cost) {
+                return; // Not enough coins
+            }
+
+            // Deduct coins
+            coins -= cost;
+
+            // Apply power-up
+            switch(powerUpType) {
+                case 'speed':
+                    powerUpSpeedBoost = 1.009; // 0.9% speed boost
+                    powerUpSpeedBoostActive = true;
+                    if (shopItem) shopItem.classList.add('purchased');
+                    break;
+
+                case 'freeze':
+                    powerUpFreezeTime = true;
+                    powerUpFreezeUntil = Date.now() + 4000; // Freeze for 4 seconds
+                    if (shopItem) shopItem.classList.add('purchased');
+                    // Allow multiple purchases of freeze
+                    setTimeout(() => {
+                        if (shopItem) shopItem.classList.remove('purchased');
+                    }, 4000);
+                    break;
+
+                case 'lives':
+                    powerUpExtraLives += 2;
+                    if (shopItem) shopItem.classList.add('purchased');
+                    break;
+
+                case 'airstrike':
+                    powerUpAirstrikeOwned = true;
+                    if (shopItem) shopItem.classList.add('purchased');
+                    // Show airstrike panel
+                    document.getElementById('airstrikePanel').style.display = 'block';
+                    break;
+            }
+
+            // Update coin display
+            document.getElementById('coinDisplay').textContent = `💰 ${coins}`;
+        }
+
+        // Airstrike code input handler
+        document.addEventListener('keydown', function(e) {
+            // Only accept input if airstrike panel is visible and game is running
+            const airstrikePanel = document.getElementById('airstrikePanel');
+            if (!airstrikePanel || airstrikePanel.style.display === 'none' || !gameStarted || gameOver) {
+                return;
+            }
+
+            // Only accept number keys
+            if (e.key >= '0' && e.key <= '9') {
+                airstrikeCodeInput += e.key;
+                document.getElementById('airstrikeInput').textContent = airstrikeCodeInput;
+
+                // Check if code is complete (4 digits)
+                if (airstrikeCodeInput.length === 4) {
+                    if (airstrikeCodeInput === '6741') {
+                        // Correct code! Launch airstrike
+                        launchAirstrike();
+                    } else {
+                        // Wrong code, reset
+                        airstrikeCodeInput = '';
+                        document.getElementById('airstrikeInput').textContent = '';
+                        // Could add visual feedback for wrong code
+                    }
+                }
+            } else if (e.key === 'Backspace') {
+                airstrikeCodeInput = airstrikeCodeInput.slice(0, -1);
+                document.getElementById('airstrikeInput').textContent = airstrikeCodeInput;
+            }
+        });
+
+        function launchAirstrike() {
+            // Hide the code panel
+            document.getElementById('airstrikePanel').style.display = 'none';
+            airstrikeCodeInput = '';
+            document.getElementById('airstrikeInput').textContent = '';
+
+            // Show "AIRSTRIKE INCOMING" message
+            const airstrikeMsg = document.getElementById('airstrikeMessage');
+            airstrikeMsg.style.display = 'block';
+
+            // After 1.5 seconds, start the missile animation
+            setTimeout(() => {
+                airstrikeMsg.style.display = 'none';
+                airstrikeAnimating = true;
+                airstrikeY = -50; // Start above screen
+            }, 1500);
+        }
+
+        // Render character previews (face/head only)
         function renderCharacterPreviews() {
             const previewSize = 60;
             const centerX = previewSize / 2;
             const centerY = previewSize / 2;
 
-            // Preview for each character
+            // Preview for each character - draw just their face
             ['chick', 'goose', 'ghost', 'military', 'dog'].forEach(character => {
                 const canvas = document.getElementById(`preview-${character}`);
                 if (!canvas) return;
@@ -3779,41 +4509,336 @@
                 // Clear canvas
                 previewCtx.clearRect(0, 0, previewSize, previewSize);
 
-                // Save the main context and temporarily use preview context
-                const originalCtx = ctx;
-                ctx = previewCtx;
-
-                // Draw the character (scaled down for preview)
-                const scale = 0.8;
-                previewCtx.save();
-                previewCtx.scale(scale, scale);
-
-                const adjustedX = centerX / scale;
-                const adjustedY = centerY / scale;
-
+                // Draw character face
                 switch(character) {
                     case 'chick':
-                        drawChick(adjustedX, adjustedY, false);
+                        drawChickFace(previewCtx, centerX, centerY);
                         break;
                     case 'goose':
-                        drawGoose(adjustedX, adjustedY, false);
+                        drawGooseFace(previewCtx, centerX, centerY);
                         break;
                     case 'ghost':
-                        drawGhost(adjustedX, adjustedY, false);
+                        drawGhostFace(previewCtx, centerX, centerY);
                         break;
                     case 'military':
-                        drawMilitary(adjustedX, adjustedY, false);
+                        drawMilitaryFace(previewCtx, centerX, centerY);
                         break;
                     case 'dog':
-                        drawDog(adjustedX, adjustedY, false);
+                        drawDogFace(previewCtx, centerX, centerY);
                         break;
                 }
-
-                previewCtx.restore();
-
-                // Restore the main context
-                ctx = originalCtx;
             });
+        }
+
+        // Draw just the chick's face for preview
+        function drawChickFace(ctx, x, y) {
+            const size = 20;
+
+            // Fluffy body (golden)
+            const bodyGradient = ctx.createRadialGradient(x, y, 2, x, y, size);
+            bodyGradient.addColorStop(0, '#FFE67C');
+            bodyGradient.addColorStop(0.6, '#FFD700');
+            bodyGradient.addColorStop(1, '#F4C430');
+            ctx.fillStyle = bodyGradient;
+            ctx.beginPath();
+            ctx.arc(x, y, size, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Head (slightly brighter)
+            ctx.fillStyle = '#FFE67C';
+            ctx.beginPath();
+            ctx.arc(x, y - size * 0.3, size * 0.8, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Big sparkly eyes
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(x - size * 0.3, y - size * 0.4, size * 0.2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + size * 0.3, y - size * 0.4, size * 0.2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Eye sparkles
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(x - size * 0.25, y - size * 0.45, size * 0.08, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + size * 0.35, y - size * 0.45, size * 0.08, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Tiny orange beak
+            ctx.fillStyle = '#FFA500';
+            ctx.beginPath();
+            ctx.moveTo(x - size * 0.1, y - size * 0.1);
+            ctx.lineTo(x + size * 0.1, y - size * 0.1);
+            ctx.lineTo(x, y);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        // Draw just the goose's face for preview
+        function drawGooseFace(ctx, x, y) {
+            const size = 20;
+
+            // Head (white)
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.arc(x, y, size * 0.9, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Long neck extending down
+            ctx.fillStyle = '#F8F8F8';
+            ctx.fillRect(x - size * 0.3, y, size * 0.6, size * 1.2);
+
+            // Orange beak
+            ctx.fillStyle = '#FF8C00';
+            ctx.beginPath();
+            ctx.ellipse(x + size * 0.8, y, size * 0.5, size * 0.3, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Eyes
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(x - size * 0.2, y - size * 0.2, size * 0.15, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + size * 0.2, y - size * 0.2, size * 0.15, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Draw just the ghost's face for preview
+        function drawGhostFace(ctx, x, y) {
+            const size = 20;
+
+            // Ghost body (semi-transparent)
+            ctx.globalAlpha = 0.85;
+            const ghostGradient = ctx.createRadialGradient(x, y - size * 0.3, 3, x, y, size);
+            ghostGradient.addColorStop(0, '#FFFFFF');
+            ghostGradient.addColorStop(0.7, '#F0F8FF');
+            ghostGradient.addColorStop(1, '#E0E8F0');
+            ctx.fillStyle = ghostGradient;
+            ctx.beginPath();
+            ctx.arc(x, y, size, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Eyes (black oval)
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.ellipse(x - size * 0.35, y - size * 0.2, size * 0.2, size * 0.3, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(x + size * 0.35, y - size * 0.2, size * 0.2, size * 0.3, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Mouth (O shape)
+            ctx.beginPath();
+            ctx.arc(x, y + size * 0.3, size * 0.25, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.globalAlpha = 1;
+        }
+
+        // Draw just the military soldier's face for preview
+        function drawMilitaryFace(ctx, x, y) {
+            const size = 20;
+
+            // Head (realistic skin tone)
+            ctx.fillStyle = '#C29B7A';
+            ctx.beginPath();
+            ctx.arc(x, y + size * 0.1, size * 0.85, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Neck
+            ctx.fillStyle = '#B8916D';
+            ctx.fillRect(x - size * 0.25, y + size * 0.7, size * 0.5, size * 0.5);
+
+            // Military helmet with camo pattern
+            ctx.fillStyle = '#5C5843'; // Base tan/brown
+            ctx.beginPath();
+            ctx.ellipse(x, y - size * 0.5, size * 1.1, size * 0.7, 0, 0, Math.PI);
+            ctx.fill();
+
+            // Helmet camo spots (darker)
+            ctx.fillStyle = '#4A4731';
+            ctx.beginPath();
+            ctx.arc(x - size * 0.5, y - size * 0.6, size * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + size * 0.4, y - size * 0.5, size * 0.25, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Helmet camo spots (lighter tan)
+            ctx.fillStyle = '#736B52';
+            ctx.beginPath();
+            ctx.arc(x - size * 0.2, y - size * 0.7, size * 0.2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + size * 0.6, y - size * 0.6, size * 0.2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Helmet rim/brim
+            ctx.fillStyle = '#3D3A2F';
+            ctx.fillRect(x - size * 1.1, y - size * 0.3, size * 2.2, size * 0.2);
+
+            // Helmet strap under chin
+            ctx.strokeStyle = '#4A4731';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(x, y + size * 0.5, size * 0.6, 0.3, Math.PI - 0.3);
+            ctx.stroke();
+
+            // Eyebrows (serious/focused look)
+            ctx.strokeStyle = '#654321';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(x - size * 0.55, y - size * 0.05);
+            ctx.lineTo(x - size * 0.25, y - size * 0.1);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x + size * 0.25, y - size * 0.1);
+            ctx.lineTo(x + size * 0.55, y - size * 0.05);
+            ctx.stroke();
+
+            // Eyes (alert and focused)
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.ellipse(x - size * 0.35, y + size * 0.05, size * 0.18, size * 0.15, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(x + size * 0.35, y + size * 0.05, size * 0.18, size * 0.15, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Pupils (brown/dark)
+            ctx.fillStyle = '#3D2817';
+            ctx.beginPath();
+            ctx.arc(x - size * 0.35, y + size * 0.05, size * 0.1, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + size * 0.35, y + size * 0.05, size * 0.1, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Eye highlights
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.beginPath();
+            ctx.arc(x - size * 0.32, y + size * 0.02, size * 0.04, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + size * 0.38, y + size * 0.02, size * 0.04, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Nose
+            ctx.strokeStyle = '#A88160';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(x, y + size * 0.15);
+            ctx.lineTo(x - size * 0.08, y + size * 0.3);
+            ctx.stroke();
+
+            // Mouth (neutral/serious expression)
+            ctx.strokeStyle = '#8B6B54';
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(x - size * 0.25, y + size * 0.5);
+            ctx.lineTo(x + size * 0.25, y + size * 0.5);
+            ctx.stroke();
+
+            // Uniform collar (camo pattern)
+            ctx.fillStyle = '#5C5843';
+            ctx.beginPath();
+            ctx.moveTo(x - size * 0.4, y + size * 0.9);
+            ctx.lineTo(x - size * 0.25, y + size * 0.7);
+            ctx.lineTo(x + size * 0.25, y + size * 0.7);
+            ctx.lineTo(x + size * 0.4, y + size * 0.9);
+            ctx.lineTo(x, y + size * 1.0);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        // Draw just the dog's face for preview
+        function drawDogFace(ctx, x, y) {
+            const size = 15;
+
+            // Head (white with gradient)
+            const headGradient = ctx.createRadialGradient(x - size * 0.2, y - size * 0.3, 2, x, y, size);
+            headGradient.addColorStop(0, '#FFFFFF');
+            headGradient.addColorStop(0.8, '#F5F5F5');
+            headGradient.addColorStop(1, '#E0E0E0');
+            ctx.fillStyle = headGradient;
+            ctx.beginPath();
+            ctx.arc(x, y, size * 1.0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Gray spots on head
+            ctx.fillStyle = '#888888';
+            ctx.globalAlpha = 0.7;
+            ctx.beginPath();
+            ctx.arc(x - size * 0.4, y - size * 0.5, size * 0.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + size * 0.5, y - size * 0.3, size * 0.4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+
+            // Floppy ears
+            ctx.fillStyle = '#999999';
+            ctx.beginPath();
+            ctx.ellipse(x - size * 0.8, y, size * 0.4, size * 0.8, -0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#AAAAAA';
+            ctx.beginPath();
+            ctx.ellipse(x + size * 0.8, y, size * 0.4, size * 0.8, 0.3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Snout
+            const snoutGradient = ctx.createRadialGradient(x, y + size * 0.4, 2, x, y + size * 0.4, size * 0.5);
+            snoutGradient.addColorStop(0, '#F0F0F0');
+            snoutGradient.addColorStop(1, '#D5D5D5');
+            ctx.fillStyle = snoutGradient;
+            ctx.beginPath();
+            ctx.ellipse(x, y + size * 0.5, size * 0.5, size * 0.4, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Nose
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(x, y + size * 0.4, size * 0.2, 0, Math.PI * 2);
+            ctx.fill();
+            // Nose highlight
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.beginPath();
+            ctx.arc(x - size * 0.05, y + size * 0.35, size * 0.08, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Eyes with whites
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(x - size * 0.35, y - size * 0.2, size * 0.2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + size * 0.35, y - size * 0.2, size * 0.2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Pupils
+            ctx.fillStyle = '#1a1a1a';
+            ctx.beginPath();
+            ctx.arc(x - size * 0.3, y - size * 0.15, size * 0.12, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + size * 0.4, y - size * 0.15, size * 0.12, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Eye highlights
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.beginPath();
+            ctx.arc(x - size * 0.25, y - size * 0.2, size * 0.05, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + size * 0.45, y - size * 0.2, size * 0.05, 0, Math.PI * 2);
+            ctx.fill();
         }
 
         // Start game
