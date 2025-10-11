@@ -1,7 +1,6 @@
 Flying
     jetpack on graound, fly for 50 jumps
-car
-hopping
 2 player
 power up
 reward 
+horrer mode
