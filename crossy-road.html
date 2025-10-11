@@ -2,9 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Crossy Road - Simple Game</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
+
         * {
             margin: 0;
             padding: 0;
@@ -16,79 +18,109 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+            font-family: 'Poppins', sans-serif;
+            padding: 20px;
         }
 
         .game-container {
             text-align: center;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1),
+                        0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            max-width: 650px;
+            width: 100%;
         }
 
         h1 {
             color: white;
-            margin-bottom: 10px;
-            font-size: 2.5em;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+            font-size: 3em;
+            font-weight: 800;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            letter-spacing: -1px;
         }
 
         .score-board {
             display: flex;
             justify-content: space-around;
-            margin-bottom: 15px;
-            color: white;
-            font-size: 1.2em;
+            margin-bottom: 20px;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
         .score-item {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 10px 20px;
-            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 12px 24px;
+            border-radius: 16px;
+            color: white;
+            font-size: 1em;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .score-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         }
 
         canvas {
-            border: 4px solid white;
-            border-radius: 10px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3),
+                        0 0 0 1px rgba(255, 255, 255, 0.1) inset;
             background: #87CEEB;
             position: relative;
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+            transition: transform 0.3s ease;
+        }
+
+        canvas:active {
+            transform: scale(0.99);
         }
 
         .score-display {
             position: absolute;
-            top: 10px;
-            left: 10px;
-            background: transparent;
+            top: 16px;
+            left: 16px;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
             color: white;
-            padding: 0;
-            border-radius: 0;
-            font-size: 2em;
-            font-weight: bold;
-            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 1.5em;
+            font-weight: 700;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
             z-index: 100;
             pointer-events: none;
-            font-family: Arial, sans-serif;
-            text-align: left;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .coin-display {
             position: absolute;
-            bottom: 10px;
-            left: 10px;
-            background: transparent;
+            bottom: 16px;
+            left: 16px;
+            background: rgba(255, 193, 7, 0.3);
+            backdrop-filter: blur(8px);
             color: white;
-            padding: 0;
-            border-radius: 0;
-            font-size: 2em;
-            font-weight: bold;
-            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 1.5em;
+            font-weight: 700;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
             z-index: 100;
             pointer-events: none;
-            font-family: Arial, sans-serif;
-            text-align: left;
+            border: 1px solid rgba(255, 215, 0, 0.4);
         }
 
         .flight-display {
@@ -97,16 +129,17 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(255, 215, 0, 0.9);
-            color: #000;
-            padding: 15px 30px;
-            border-radius: 15px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: white;
+            padding: 20px 40px;
+            border-radius: 20px;
             font-size: 2em;
-            font-weight: bold;
+            font-weight: 700;
             z-index: 101;
             pointer-events: none;
-            font-family: Arial, sans-serif;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+            box-shadow: 0 8px 32px rgba(251, 191, 36, 0.6),
+                        0 0 0 1px rgba(255, 255, 255, 0.3) inset;
+            border: 2px solid rgba(255, 255, 255, 0.4);
             animation: pulse 0.5s infinite alternate;
         }
 
@@ -115,32 +148,45 @@
         }
 
         @keyframes pulse {
-            from { transform: translate(-50%, -50%) scale(1); }
-            to { transform: translate(-50%, -50%) scale(1.05); }
+            from {
+                transform: translate(-50%, -50%) scale(1);
+                box-shadow: 0 8px 32px rgba(251, 191, 36, 0.6);
+            }
+            to {
+                transform: translate(-50%, -50%) scale(1.05);
+                box-shadow: 0 12px 48px rgba(251, 191, 36, 0.8);
+            }
         }
 
         .settings-btn {
             position: absolute;
             top: 20px;
             right: 20px;
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
             color: white;
-            border: 2px solid white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            font-size: 1.5em;
+            width: 56px;
+            height: 56px;
+            font-size: 1.6em;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 100;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
         }
 
         .settings-btn:hover {
-            background: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.35);
             transform: rotate(90deg) scale(1.1);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .settings-btn:active {
+            transform: rotate(90deg) scale(1.05);
         }
 
         .settings-btn.hidden {
@@ -234,48 +280,63 @@
 
         .settings-buttons button {
             flex: 1;
-            padding: 12px;
+            padding: 14px 24px;
             font-size: 1.1em;
+            font-weight: 600;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .btn-save {
-            background: #4ECDC4;
+            background: linear-gradient(135deg, #10b981, #059669);
             color: white;
         }
 
         .btn-save:hover {
-            background: #45b7af;
-            transform: scale(1.05);
+            background: linear-gradient(135deg, #059669, #047857);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
         }
 
         .btn-cancel {
-            background: #FF6B6B;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
             color: white;
         }
 
         .btn-cancel:hover {
-            background: #ff5252;
-            transform: scale(1.05);
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
         }
 
         .btn-reset {
-            background: #FFA07A;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
             color: white;
         }
 
         .btn-reset:hover {
-            background: #ff8c61;
-            transform: scale(1.05);
+            background: linear-gradient(135deg, #d97706, #b45309);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+        }
+
+        .settings-buttons button:active {
+            transform: translateY(0);
         }
 
         .controls {
-            margin-top: 15px;
-            color: white;
+            margin-top: 20px;
+            color: rgba(255, 255, 255, 0.9);
             font-size: 0.9em;
+            font-weight: 500;
+            line-height: 1.6;
+        }
+
+        .controls p {
+            margin: 4px 0;
         }
 
         .game-over {
@@ -284,61 +345,90 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             color: white;
-            padding: 40px;
-            border-radius: 15px;
+            padding: 50px;
+            border-radius: 24px;
             text-align: center;
             z-index: 10002;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            min-width: 320px;
         }
 
         .game-over h2 {
-            font-size: 3em;
+            font-size: 3.5em;
             margin-bottom: 20px;
-            color: #ff6b6b;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+        }
+
+        .game-over p {
+            font-size: 1.2em;
+            margin: 10px 0;
+            color: rgba(255, 255, 255, 0.8);
         }
 
         .game-over button {
-            margin-top: 20px;
-            padding: 15px 40px;
+            margin-top: 30px;
+            padding: 16px 48px;
             font-size: 1.2em;
-            background: #667eea;
+            font-weight: 600;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 16px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
         }
 
         .game-over button:hover {
-            background: #764ba2;
-            transform: scale(1.05);
+            background: linear-gradient(135deg, #8b5cf6, #d946ef);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(139, 92, 246, 0.6);
+        }
+
+        .game-over button:active {
+            transform: translateY(0);
         }
 
         .fullscreen-btn {
             position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.7);
+            top: 16px;
+            right: 16px;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
             color: white;
-            border: 2px solid white;
-            border-radius: 8px;
-            padding: 8px 15px;
-            font-size: 1.1em;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 10px 18px;
+            font-size: 1em;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 100;
         }
 
         .fullscreen-btn:hover {
-            background: rgba(0, 0, 0, 0.9);
-            transform: scale(1.05);
+            background: rgba(0, 0, 0, 0.7);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .fullscreen-btn:active {
+            transform: translateY(0);
         }
 
         #fullscreenContainer .fullscreen-btn {
             position: fixed;
-            top: 10px;
-            right: 10px;
+            top: 16px;
+            right: 16px;
         }
 
         .exit-fullscreen-btn {
@@ -423,7 +513,7 @@
             <button class="fullscreen-btn" id="fullscreenBtn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
         </div>
         <div class="controls">
-            <p>🎮 Use Arrow Keys to Move</p>
+            <p>🎮 Desktop: Use Arrow Keys | Mobile: Tap to move forward, Swipe to change direction</p>
             <p>↑ Up | ↓ Down | ← Left | → Right</p>
         </div>
     </div>
@@ -2371,10 +2461,101 @@
             switch(e.key) {
                 case 'ArrowUp':
                     e.preventDefault();
+                    handleMove('up');
+                    break;
+                case 'ArrowDown':
+                    e.preventDefault();
+                    handleMove('down');
+                    break;
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    handleMove('left');
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    handleMove('right');
+                    break;
+            }
+        });
+
+        // Mobile touch controls
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchStartTime = 0;
+        let touchEndX = 0;
+        let touchEndY = 0;
+        const swipeThreshold = 30; // Minimum distance for a swipe
+        const tapThreshold = 200; // Maximum time for a tap (ms)
+
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+            touchStartTime = Date.now();
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            if (gameOver) return;
+
+            const touch = e.changedTouches[0];
+            touchEndX = touch.clientX;
+            touchEndY = touch.clientY;
+            const touchDuration = Date.now() - touchStartTime;
+
+            // Check flight movement delay
+            if (isFlying && Date.now() - lastMoveTime < gameSettings.flightMovementDelay) {
+                return;
+            }
+
+            const deltaX = touchEndX - touchStartX;
+            const deltaY = touchEndY - touchStartY;
+            const absDeltaX = Math.abs(deltaX);
+            const absDeltaY = Math.abs(deltaY);
+
+            // Check if it's a tap (quick touch with minimal movement)
+            if (touchDuration < tapThreshold && absDeltaX < swipeThreshold && absDeltaY < swipeThreshold) {
+                // Tap = move forward (up)
+                handleMove('up');
+            }
+            // Check if it's a swipe
+            else if (absDeltaX > swipeThreshold || absDeltaY > swipeThreshold) {
+                // Determine primary swipe direction
+                if (absDeltaX > absDeltaY) {
+                    // Horizontal swipe
+                    if (deltaX > 0) {
+                        handleMove('right');
+                    } else {
+                        handleMove('left');
+                    }
+                } else {
+                    // Vertical swipe
+                    if (deltaY > 0) {
+                        handleMove('down');
+                    } else {
+                        handleMove('up');
+                    }
+                }
+            }
+        }, { passive: false });
+
+        // Unified movement handler for both keyboard and touch
+        function handleMove(direction) {
+            if (gameOver) return;
+
+            // Check flight movement delay
+            if (isFlying && Date.now() - lastMoveTime < gameSettings.flightMovementDelay) {
+                return;
+            }
+
+            switch(direction) {
+                case 'up':
                     player.worldY--;
                     player.isHopping = true;
                     player.hopProgress = 0;
                     if (isFlying) lastMoveTime = Date.now();
+
                     // Update max progress
                     if (player.worldY < maxWorldY) {
                         maxWorldY = player.worldY;
@@ -2385,17 +2566,16 @@
 
                         // Check if it's time to spawn a coin
                         if (score === nextCoinSpawn) {
-                            // Spawn coin at a random x position further ahead
                             const distanceRange = gameSettings.coinSpawnDistanceMax - gameSettings.coinSpawnDistanceMin;
                             coinObjects.push({
                                 x: Math.floor(Math.random() * COLS),
                                 y: player.worldY - Math.floor(Math.random() * distanceRange + gameSettings.coinSpawnDistanceMin),
                                 collected: false
                             });
-                            // Set next coin spawn
                             const spawnRange = gameSettings.coinSpawnMax - gameSettings.coinSpawnMin;
                             nextCoinSpawn = score + Math.floor(Math.random() * spawnRange) + gameSettings.coinSpawnMin;
                         }
+
                         // Check for win condition
                         if (score >= gameSettings.winScore) {
                             winGame();
@@ -2403,8 +2583,8 @@
                     }
                     updateScoreDisplay();
                     break;
-                case 'ArrowDown':
-                    e.preventDefault();
+
+                case 'down':
                     // Don't allow moving past the starting position
                     if (player.worldY < startingWorldY) {
                         player.worldY++;
@@ -2414,8 +2594,8 @@
                         updateScoreDisplay();
                     }
                     break;
-                case 'ArrowLeft':
-                    e.preventDefault();
+
+                case 'left':
                     if (player.x > 0) {
                         player.x--;
                         player.isHopping = true;
@@ -2423,8 +2603,8 @@
                         if (isFlying) lastMoveTime = Date.now();
                     }
                     break;
-                case 'ArrowRight':
-                    e.preventDefault();
+
+                case 'right':
                     if (player.x < COLS - 1) {
                         player.x++;
                         player.isHopping = true;
@@ -2433,7 +2613,7 @@
                     }
                     break;
             }
-        });
+        }
 
         function updateScoreDisplay() {
             document.getElementById('scoreDisplay').textContent = score;
