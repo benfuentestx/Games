@@ -465,86 +465,135 @@
             }
         }
 
-        /* Shop Styles */
-        .shop-container {
+        /* Fullscreen Shop Styles */
+        .fullscreen-shop {
             position: fixed;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            z-index: 10000;
+            display: none;
+            overflow-y: auto;
+            padding: 40px 20px;
+        }
+
+        .shop-header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .shop-header h2 {
+            color: white;
+            font-size: 3.5em;
+            font-weight: 800;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+        }
+
+        .shop-coin-display {
+            color: white;
+            font-size: 1.8em;
+            font-weight: 700;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .close-shop-btn {
+            position: absolute;
+            top: 0;
+            right: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            font-weight: 700;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close-shop-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        .shop-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .shop-card {
             background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            padding: 20px;
-            border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            z-index: 50;
-            max-width: 220px;
-        }
-
-        .shop-container h3 {
-            color: white;
-            font-size: 1.2em;
-            font-weight: 700;
-            margin-bottom: 5px;
-            text-align: center;
-        }
-
-        .shop-container p {
-            color: rgba(255, 255, 255, 0.8);
-            text-align: center;
-            margin-bottom: 15px;
-        }
-
-        .shop-items {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .shop-item {
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            padding: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 24px;
+            padding: 40px;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
 
-        .shop-item:hover:not(.purchased) {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateX(4px);
-            border-color: rgba(255, 255, 255, 0.4);
+        .shop-card:hover:not(.purchased) {
+            transform: translateY(-10px);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.25);
         }
 
-        .shop-item.purchased {
-            opacity: 0.5;
+        .shop-card.purchased {
+            opacity: 0.6;
             cursor: not-allowed;
             background: rgba(0, 0, 0, 0.2);
         }
 
-        .shop-item-name {
+        .shop-card-icon {
+            font-size: 5em;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
+        }
+
+        .shop-card h3 {
             color: white;
-            font-size: 0.95em;
-            font-weight: 600;
-            text-align: center;
-        }
-
-        .shop-item-cost {
-            color: #ffd700;
-            font-size: 0.9em;
+            font-size: 2em;
             font-weight: 700;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
-        .shop-item-desc {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.75em;
-            text-align: center;
-            line-height: 1.3;
+        .shop-card-desc {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            min-height: 60px;
+        }
+
+        .shop-card-price {
+            color: #ffd700;
+            font-size: 1.8em;
+            font-weight: 800;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .shop-card-status {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1em;
+            font-weight: 600;
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            display: inline-block;
         }
 
         .airstrike-panel {
@@ -843,30 +892,41 @@
         </div>
     </div>
 
-    <!-- Power-Up Shop -->
-    <div class="shop-container" id="shopContainer" style="display: none;">
-        <h3>⚡ Power-Up Shop</h3>
-        <p style="font-size: 0.9em; margin: 5px 0;">Unlocked at Score 50!</p>
-        <div class="shop-items">
-            <div class="shop-item" data-powerup="speed" onclick="buyPowerUp('speed')">
-                <div class="shop-item-name">🚀 Speed Boost</div>
-                <div class="shop-item-desc">+0.9% Speed</div>
-                <div class="shop-item-cost">💰 1 Coin</div>
+    <!-- Fullscreen Power-Up Shop -->
+    <div class="fullscreen-shop" id="fullscreenShop" style="display: none;">
+        <div class="shop-header">
+            <h2>⚡ POWER-UP SHOP ⚡</h2>
+            <div class="shop-coin-display">💰 Coins: <span id="shopCoins">0</span></div>
+            <button class="close-shop-btn" onclick="exitShop()">✖ EXIT</button>
+        </div>
+        <div class="shop-grid">
+            <div class="shop-card" data-powerup="speed" onclick="buyPowerUp('speed')">
+                <div class="shop-card-icon">🚀</div>
+                <h3>Speed Boost</h3>
+                <p class="shop-card-desc">Increases your movement speed by 0.9%</p>
+                <div class="shop-card-price">💰 1 Coin</div>
+                <div class="shop-card-status">Click to Purchase</div>
             </div>
-            <div class="shop-item" data-powerup="freeze" onclick="buyPowerUp('freeze')">
-                <div class="shop-item-name">❄️ Freeze Time</div>
-                <div class="shop-item-desc">Stop cars for 4 seconds</div>
-                <div class="shop-item-cost">💰 1 Coin</div>
+            <div class="shop-card" data-powerup="freeze" onclick="buyPowerUp('freeze')">
+                <div class="shop-card-icon">❄️</div>
+                <h3>Freeze Time</h3>
+                <p class="shop-card-desc">Stop all cars for 4 seconds</p>
+                <div class="shop-card-price">💰 1 Coin</div>
+                <div class="shop-card-status">Click to Purchase</div>
             </div>
-            <div class="shop-item" data-powerup="lives" onclick="buyPowerUp('lives')">
-                <div class="shop-item-name">❤️ Extra Lives</div>
-                <div class="shop-item-desc">+2 Lives</div>
-                <div class="shop-item-cost">💰 2 Coins</div>
+            <div class="shop-card" data-powerup="lives" onclick="buyPowerUp('lives')">
+                <div class="shop-card-icon">❤️</div>
+                <h3>Extra Lives</h3>
+                <p class="shop-card-desc">Get 2 additional lives</p>
+                <div class="shop-card-price">💰 2 Coins</div>
+                <div class="shop-card-status">Click to Purchase</div>
             </div>
-            <div class="shop-item" data-powerup="airstrike" onclick="buyPowerUp('airstrike')">
-                <div class="shop-item-name">💣 Airstrike</div>
-                <div class="shop-item-desc">Clear all cars for 9 seconds</div>
-                <div class="shop-item-cost">💰 4 Coins</div>
+            <div class="shop-card" data-powerup="airstrike" onclick="buyPowerUp('airstrike')">
+                <div class="shop-card-icon">💣</div>
+                <h3>Airstrike</h3>
+                <p class="shop-card-desc">Clear all cars for 9 seconds. Enter code: 6741</p>
+                <div class="shop-card-price">💰 4 Coins</div>
+                <div class="shop-card-status">Click to Purchase</div>
             </div>
         </div>
     </div>
@@ -1046,7 +1106,10 @@
         let militaryKnockdownTimer = 0; // Timer for knockdown animation
 
         // Shop and Power-ups
-        let shopUnlocked = false; // Shop unlocks at score 50
+        let shopUnlocked = false; // Shop unlocks at score 70
+        let shopBuildingWorldY = null; // Position of shop building on map
+        let shopBuildingX = 7; // Center of map (column)
+        let inShop = false; // True when player is in the shop interface
         let powerUpSpeedBoost = 1.0; // Speed boost multiplier (1.009 when active)
         let powerUpSpeedBoostActive = false;
         let powerUpFreezeTime = false;
@@ -1282,7 +1345,7 @@
 
         // Update game
         function update(deltaTime) {
-            if (gameOver) return;
+            if (gameOver || inShop) return; // Pause game when in shop
 
             // Smooth player position interpolation (with dog speed boost if applicable)
             let playerLerpFactor = 0.25;
@@ -1380,8 +1443,8 @@
                 const wolfXLerpFactor = 0.05; // Lower = more delay/smoother
                 wolfX += (player.x - wolfX) * wolfXLerpFactor;
 
-                // Check if wolf caught the chicken (using actual positions)
-                if (wolfWorldY <= player.worldY && Math.abs(wolfX - player.x) < 0.5) {
+                // Check if wolf caught the chicken (using actual positions) - but not in shop
+                if (wolfWorldY <= player.worldY && Math.abs(wolfX - player.x) < 0.5 && !inShop) {
                     endGame();
                 }
 
@@ -1474,10 +1537,22 @@
             // Clean up old collected coins and coins far behind the player
             coinObjects = coinObjects.filter(coin => !coin.collected && coin.y > cameraY - 5);
 
-            // Shop unlock at score 50
-            if (score >= 50 && !shopUnlocked) {
+            // Shop unlock at score 70
+            if (score >= 70 && !shopUnlocked) {
                 shopUnlocked = true;
-                document.getElementById('shopContainer').style.display = 'block';
+                // Spawn shop building ahead of player (3 rows forward on grass)
+                shopBuildingWorldY = player.worldY - 5; // 5 rows ahead
+            }
+
+            // Check if player enters shop building (larger detection area)
+            if (shopUnlocked && shopBuildingWorldY !== null && !inShop) {
+                const distanceY = Math.abs(player.worldY - shopBuildingWorldY);
+                const distanceX = Math.abs(player.x - shopBuildingX);
+
+                // Enter shop if within 2 tiles of building center
+                if (distanceY < 2 && distanceX < 2) {
+                    enterShop();
+                }
             }
 
             // Update freeze time power-up
@@ -1663,6 +1738,14 @@
             // Draw monsters (horror mode)
             if (gameSettings.horrorMode && monsters.length > 0) {
                 drawMonsters();
+            }
+
+            // Draw shop building if unlocked
+            if (shopUnlocked && shopBuildingWorldY !== null) {
+                const shopScreenY = (shopBuildingWorldY - cameraY) * GRID_SIZE;
+                if (shopScreenY >= -GRID_SIZE * 3 && shopScreenY <= canvas.height) {
+                    drawShopBuilding(shopBuildingX * GRID_SIZE, shopScreenY);
+                }
             }
 
             // Draw player (chicken) with camera offset using smooth render positions and hop offset
@@ -3591,6 +3674,101 @@
         }
 
         // Draw coin with 3D effect
+        function drawShopBuilding(x, y) {
+            const buildingWidth = GRID_SIZE * 3;
+            const buildingHeight = GRID_SIZE * 2.5;
+
+            // Shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.fillRect(x - buildingWidth / 2 + 5, y + buildingHeight + 5, buildingWidth, 10);
+
+            // Building base
+            const buildingGradient = ctx.createLinearGradient(x - buildingWidth / 2, y, x + buildingWidth / 2, y);
+            buildingGradient.addColorStop(0, '#8B4513');
+            buildingGradient.addColorStop(0.5, '#A0522D');
+            buildingGradient.addColorStop(1, '#8B4513');
+            ctx.fillStyle = buildingGradient;
+            ctx.fillRect(x - buildingWidth / 2, y, buildingWidth, buildingHeight);
+
+            // Building outline
+            ctx.strokeStyle = '#654321';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(x - buildingWidth / 2, y, buildingWidth, buildingHeight);
+
+            // Roof
+            ctx.fillStyle = '#8B0000';
+            ctx.beginPath();
+            ctx.moveTo(x - buildingWidth / 2 - 10, y);
+            ctx.lineTo(x, y - 30);
+            ctx.lineTo(x + buildingWidth / 2 + 10, y);
+            ctx.closePath();
+            ctx.fill();
+            ctx.strokeStyle = '#660000';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Door
+            ctx.fillStyle = '#654321';
+            ctx.fillRect(x - 20, y + buildingHeight - 50, 40, 50);
+            ctx.strokeStyle = '#4A3319';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x - 20, y + buildingHeight - 50, 40, 50);
+
+            // Door handle
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(x + 10, y + buildingHeight - 25, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Windows
+            ctx.fillStyle = '#87CEEB';
+            ctx.fillRect(x - 50, y + 30, 25, 25);
+            ctx.fillRect(x + 25, y + 30, 25, 25);
+            ctx.strokeStyle = '#654321';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x - 50, y + 30, 25, 25);
+            ctx.strokeRect(x + 25, y + 30, 25, 25);
+
+            // Window crosses
+            ctx.strokeStyle = '#654321';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(x - 37.5, y + 30);
+            ctx.lineTo(x - 37.5, y + 55);
+            ctx.moveTo(x - 50, y + 42.5);
+            ctx.lineTo(x - 25, y + 42.5);
+            ctx.moveTo(x + 37.5, y + 30);
+            ctx.lineTo(x + 37.5, y + 55);
+            ctx.moveTo(x + 25, y + 42.5);
+            ctx.lineTo(x + 50, y + 42.5);
+            ctx.stroke();
+
+            // Sign above door
+            ctx.fillStyle = '#FFD700';
+            ctx.fillRect(x - 40, y + buildingHeight - 70, 80, 15);
+            ctx.strokeStyle = '#D4A017';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x - 40, y + buildingHeight - 70, 80, 15);
+
+            // "SHOP" text
+            ctx.fillStyle = '#8B0000';
+            ctx.font = 'bold 14px Poppins';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('SHOP', x, y + buildingHeight - 62.5);
+
+            // Entry indicator (pulsing)
+            const pulseAlpha = 0.5 + Math.sin(Date.now() / 300) * 0.3;
+            ctx.fillStyle = `rgba(255, 215, 0, ${pulseAlpha})`;
+            ctx.font = 'bold 14px Poppins';
+            ctx.fillText('WALK HERE TO ENTER', x, y + buildingHeight + 25);
+
+            // Arrow pointing to building
+            ctx.fillStyle = `rgba(255, 215, 0, ${pulseAlpha})`;
+            ctx.font = 'bold 20px Poppins';
+            ctx.fillText('↓', x, y + buildingHeight + 10);
+        }
+
         function drawCoin(x, y) {
             const coinRadius = 12;
 
@@ -3781,7 +3959,7 @@
 
         // Check monster collision
         function checkMonsterCollision() {
-            if (isFlying) return; // No collision when flying
+            if (isFlying || inShop) return; // No collision when flying or in shop
 
             monsters.forEach(monster => {
                 const dx = monster.x - player.x;
@@ -3796,8 +3974,8 @@
 
         // Check collision
         function checkCollision() {
-            // Don't check collision when flying, ghost phasing, or military is knocked down
-            if (isFlying || ghostPhasing || militaryKnockedDown) return;
+            // Don't check collision when flying, ghost phasing, military is knocked down, or in shop
+            if (isFlying || ghostPhasing || militaryKnockedDown || inShop) return;
 
             cars.forEach(car => {
                 if (Math.floor(car.y) === player.worldY) {
@@ -4380,8 +4558,18 @@
         }
 
         // Shop Functions
+        function enterShop() {
+            inShop = true;
+            document.getElementById('fullscreenShop').style.display = 'block';
+            document.getElementById('shopCoins').textContent = coins;
+        }
+
+        function exitShop() {
+            inShop = false;
+            document.getElementById('fullscreenShop').style.display = 'none';
+        }
+
         function buyPowerUp(powerUpType) {
-            const shopContainer = document.getElementById('shopContainer');
             const shopItem = document.querySelector(`[data-powerup="${powerUpType}"]`);
 
             // Check if already purchased
@@ -4412,7 +4600,10 @@
                 case 'speed':
                     powerUpSpeedBoost = 1.009; // 0.9% speed boost
                     powerUpSpeedBoostActive = true;
-                    if (shopItem) shopItem.classList.add('purchased');
+                    if (shopItem) {
+                        shopItem.classList.add('purchased');
+                        shopItem.querySelector('.shop-card-status').textContent = 'PURCHASED';
+                    }
                     break;
 
                 case 'freeze':
@@ -4421,39 +4612,55 @@
                     if (shopItem) shopItem.classList.add('purchased');
                     // Allow multiple purchases of freeze
                     setTimeout(() => {
-                        if (shopItem) shopItem.classList.remove('purchased');
+                        if (shopItem) {
+                            shopItem.classList.remove('purchased');
+                            shopItem.querySelector('.shop-card-status').textContent = 'Click to Purchase';
+                        }
                     }, 4000);
+                    // Exit shop after purchase
+                    exitShop();
                     break;
 
                 case 'lives':
                     powerUpExtraLives += 2;
-                    if (shopItem) shopItem.classList.add('purchased');
+                    if (shopItem) {
+                        shopItem.classList.add('purchased');
+                        shopItem.querySelector('.shop-card-status').textContent = 'PURCHASED';
+                    }
                     break;
 
                 case 'airstrike':
                     powerUpAirstrikeOwned = true;
-                    if (shopItem) shopItem.classList.add('purchased');
-                    // Show airstrike panel
-                    document.getElementById('airstrikePanel').style.display = 'block';
+                    if (shopItem) {
+                        shopItem.classList.add('purchased');
+                        shopItem.querySelector('.shop-card-status').textContent = 'PURCHASED';
+                    }
+                    // Don't show airstrike panel here - it will activate automatically
                     break;
             }
 
-            // Update coin display
+            // Update coin displays
             document.getElementById('coinDisplay').textContent = `💰 ${coins}`;
+            document.getElementById('shopCoins').textContent = coins;
         }
 
-        // Airstrike code input handler
+        // Airstrike code input handler - works anytime airstrike is owned
         document.addEventListener('keydown', function(e) {
-            // Only accept input if airstrike panel is visible and game is running
-            const airstrikePanel = document.getElementById('airstrikePanel');
-            if (!airstrikePanel || airstrikePanel.style.display === 'none' || !gameStarted || gameOver) {
+            // Only accept input if airstrike is owned and game is running and not in shop
+            if (!powerUpAirstrikeOwned || !gameStarted || gameOver || inShop || airstrikeAnimating) {
                 return;
             }
 
             // Only accept number keys
             if (e.key >= '0' && e.key <= '9') {
                 airstrikeCodeInput += e.key;
-                document.getElementById('airstrikeInput').textContent = airstrikeCodeInput;
+
+                // Show panel when typing starts
+                const airstrikePanel = document.getElementById('airstrikePanel');
+                if (airstrikePanel) {
+                    airstrikePanel.style.display = 'block';
+                    document.getElementById('airstrikeInput').textContent = airstrikeCodeInput;
+                }
 
                 // Check if code is complete (4 digits)
                 if (airstrikeCodeInput.length === 4) {
@@ -4467,9 +4674,14 @@
                         // Could add visual feedback for wrong code
                     }
                 }
-            } else if (e.key === 'Backspace') {
+            } else if (e.key === 'Backspace' && airstrikeCodeInput.length > 0) {
                 airstrikeCodeInput = airstrikeCodeInput.slice(0, -1);
                 document.getElementById('airstrikeInput').textContent = airstrikeCodeInput;
+
+                // Hide panel if input is empty
+                if (airstrikeCodeInput.length === 0) {
+                    document.getElementById('airstrikePanel').style.display = 'none';
+                }
             }
         });
 
