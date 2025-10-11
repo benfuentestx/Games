@@ -147,6 +147,32 @@
             display: block;
         }
 
+        .power-display {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 16px;
+            font-size: 1.1em;
+            font-weight: 600;
+            z-index: 100;
+            pointer-events: none;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2),
+                        0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            text-align: center;
+        }
+
+        .power-display.active {
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            animation: powerPulse 0.5s infinite alternate;
+        }
+
         @keyframes pulse {
             from {
                 transform: translate(-50%, -50%) scale(1);
@@ -155,6 +181,17 @@
             to {
                 transform: translate(-50%, -50%) scale(1.05);
                 box-shadow: 0 12px 48px rgba(251, 191, 36, 0.8);
+            }
+        }
+
+        @keyframes powerPulse {
+            from {
+                transform: translateX(-50%) scale(1);
+                box-shadow: 0 4px 16px rgba(139, 92, 246, 0.6);
+            }
+            to {
+                transform: translateX(-50%) scale(1.05);
+                box-shadow: 0 6px 24px rgba(236, 72, 153, 0.8);
             }
         }
 
@@ -339,6 +376,95 @@
             margin: 4px 0;
         }
 
+        .character-selector {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            z-index: 50;
+        }
+
+        .character-selector h3 {
+            color: white;
+            font-size: 1.1em;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .character-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .character-option {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .character-option:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(-4px);
+        }
+
+        .character-option.active {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 16px rgba(255, 255, 255, 0.2);
+        }
+
+        .character-preview {
+            width: 60px;
+            height: 60px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .character-option span {
+            color: white;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        @media (max-width: 900px) {
+            .character-selector {
+                position: static;
+                transform: none;
+                margin: 20px auto;
+                max-width: 500px;
+            }
+
+            .character-list {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .character-option {
+                flex: 1;
+                min-width: 80px;
+            }
+        }
+
         .game-over {
             display: none;
             position: fixed;
@@ -510,11 +636,40 @@
             <div class="score-display"><span id="scoreDisplay">0</span></div>
             <div class="coin-display">🪙 <span id="coinDisplay">0</span></div>
             <div class="flight-display" id="flightDisplay">✈️ FLYING: <span id="flightTime">5.0</span>s</div>
+            <div class="power-display" id="powerDisplay"></div>
             <button class="fullscreen-btn" id="fullscreenBtn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
         </div>
         <div class="controls">
-            <p>🎮 Desktop: Use Arrow Keys | Mobile: Tap to move forward, Swipe to change direction</p>
-            <p>↑ Up | ↓ Down | ← Left | → Right</p>
+            <p>🎮 Desktop: Arrow Keys to move | SPACE for character power</p>
+            <p>↑ Up | ↓ Down | ← Left | → Right | ␣ Special Ability</p>
+            <p>Mobile: Tap forward, Swipe to change direction</p>
+        </div>
+    </div>
+
+    <!-- Character Selection -->
+    <div class="character-selector">
+        <h3>Choose Character</h3>
+        <div class="character-list">
+            <div class="character-option active" data-character="chick" onclick="selectCharacter('chick')">
+                <div class="character-preview" id="preview-chick"></div>
+                <span>🐥 Chick</span>
+            </div>
+            <div class="character-option" data-character="goose" onclick="selectCharacter('goose')">
+                <div class="character-preview" id="preview-goose"></div>
+                <span>🦆 Goose</span>
+            </div>
+            <div class="character-option" data-character="ghost" onclick="selectCharacter('ghost')">
+                <div class="character-preview" id="preview-ghost"></div>
+                <span>👻 Ghost</span>
+            </div>
+            <div class="character-option" data-character="military" onclick="selectCharacter('military')">
+                <div class="character-preview" id="preview-military"></div>
+                <span>🪖 Soldier</span>
+            </div>
+            <div class="character-option" data-character="dog" onclick="selectCharacter('dog')">
+                <div class="character-preview" id="preview-dog"></div>
+                <span>🐕 Emma</span>
+            </div>
         </div>
     </div>
 
@@ -658,6 +813,26 @@
         const GRID_SIZE = 50; // Increased from 40 to 50 for more zoom
         const COLS = canvas.width / GRID_SIZE;
         const ROWS = canvas.height / GRID_SIZE;
+
+        // Character system
+        let selectedCharacter = 'chick';
+        const characters = {
+            chick: { name: 'Golden Chick', emoji: '🐥' },
+            goose: { name: 'Goose', emoji: '🦆' },
+            ghost: { name: 'Ghost', emoji: '👻' },
+            military: { name: 'Soldier', emoji: '🪖' },
+            dog: { name: 'Emma', emoji: '🐕' }
+        };
+
+        // Character Powers
+        let gooseHonksRemaining = 1; // Goose gets 1 honk per game
+        let carsStoppedUntil = 0; // Timestamp when cars should start moving again
+        let militaryLives = 2; // Military starts with 2 lives
+        let ghostPhasing = false; // Ghost phasing through cars
+        let ghostPhasingUntil = 0; // Timestamp when phasing ends
+        let dogSpeedBoost = 1.008; // Emma (dog) is 0.8% faster (multiply movement by this)
+        let militaryKnockedDown = false; // Military is knocked down after getting hit
+        let militaryKnockdownTimer = 0; // Timer for knockdown animation
 
         // Game Settings (configurable) - MUST BE DEFINED FIRST
         let gameSettings = {
@@ -882,10 +1057,22 @@
         function update(deltaTime) {
             if (gameOver) return;
 
-            // Smooth player position interpolation
-            const playerLerpFactor = 0.25;
+            // Smooth player position interpolation (with dog speed boost if applicable)
+            let playerLerpFactor = 0.25;
+            if (selectedCharacter === 'dog') {
+                playerLerpFactor *= dogSpeedBoost; // Dog moves 0.4% faster
+            }
             player.renderX += (player.x - player.renderX) * playerLerpFactor;
             player.renderWorldY += (player.worldY - player.renderWorldY) * playerLerpFactor;
+
+            // Update military knockdown timer
+            if (militaryKnockedDown) {
+                militaryKnockdownTimer += deltaTime;
+                if (militaryKnockdownTimer >= 1500) { // 1.5 seconds knockdown
+                    militaryKnockedDown = false;
+                    militaryKnockdownTimer = 0;
+                }
+            }
 
             // Update flight timer
             if (isFlying) {
@@ -1012,18 +1199,29 @@
             // Generate new roads as needed
             generateNewRoads();
 
+            // Update ghost phasing status
+            if (ghostPhasing && Date.now() >= ghostPhasingUntil) {
+                ghostPhasing = false;
+            }
+
             // Move cars with delta time for smooth frame-independent movement
             const timeScale = deltaTime / 16.67; // Normalize to 60fps
-            cars.forEach(car => {
-                car.x += car.speed * timeScale;
 
-                // Wrap around
-                if (car.speed > 0 && car.x > COLS + 2) {
-                    car.x = -car.width - 2;
-                } else if (car.speed < 0 && car.x < -car.width - 2) {
-                    car.x = COLS + 2;
-                }
-            });
+            // Check if cars should be stopped (goose honk power)
+            const carsShouldStop = Date.now() < carsStoppedUntil;
+
+            if (!carsShouldStop) {
+                cars.forEach(car => {
+                    car.x += car.speed * timeScale;
+
+                    // Wrap around
+                    if (car.speed > 0 && car.x > COLS + 2) {
+                        car.x = -car.width - 2;
+                    } else if (car.speed < 0 && car.x < -car.width - 2) {
+                        car.x = COLS + 2;
+                    }
+                });
+            }
 
             // Check coin collection
             coinObjects.forEach(coin => {
@@ -1160,7 +1358,7 @@
 
             // Draw player (chicken) with camera offset using smooth render positions and hop offset
             const playerScreenY = (player.renderWorldY - cameraY) * GRID_SIZE;
-            drawChicken(player.renderX * GRID_SIZE + GRID_SIZE / 2, playerScreenY + GRID_SIZE / 2 - player.hopHeight, isFlying);
+            drawCharacter(player.renderX * GRID_SIZE + GRID_SIZE / 2, playerScreenY + GRID_SIZE / 2 - player.hopHeight, isFlying);
         }
 
         // Helper function to darken a color for night time
@@ -1771,194 +1969,751 @@
             return '#' + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
         }
 
-        // Draw a realistic chicken with shading
-        function drawChicken(x, y, flying = false) {
-            const size = GRID_SIZE / 2 - 4;
+        // Main character drawing function
+        function drawCharacter(x, y, flying = false) {
+            switch(selectedCharacter) {
+                case 'chick':
+                    drawChick(x, y, flying);
+                    break;
+                case 'goose':
+                    drawGoose(x, y, flying);
+                    break;
+                case 'ghost':
+                    drawGhost(x, y, flying);
+                    break;
+                case 'military':
+                    drawMilitary(x, y, flying);
+                    break;
+                case 'dog':
+                    drawDog(x, y, flying);
+                    break;
+            }
+        }
+
+        // Draw an adorable golden chick
+        function drawChick(x, y, flying = false) {
+            const size = GRID_SIZE / 2 - 2;
 
             // Shadow (larger and more distant when flying)
             if (flying) {
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
                 ctx.beginPath();
-                ctx.ellipse(x, y + size + 30, size * 1.2, size * 0.4, 0, 0, Math.PI * 2);
+                ctx.ellipse(x, y + size + 28, size * 1.3, size * 0.4, 0, 0, Math.PI * 2);
                 ctx.fill();
             } else {
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
                 ctx.beginPath();
-                ctx.ellipse(x, y + size + 2, size * 0.8, size * 0.3, 0, 0, Math.PI * 2);
+                ctx.ellipse(x, y + size + 2, size * 0.9, size * 0.35, 0, 0, Math.PI * 2);
                 ctx.fill();
             }
 
-            // Body (white/cream colored)
-            const bodyGradient = ctx.createRadialGradient(x - 3, y - 2, 2, x, y, size);
-            bodyGradient.addColorStop(0, '#FFFFFF');
-            bodyGradient.addColorStop(0.6, '#F5F5DC');
-            bodyGradient.addColorStop(1, '#D3D3D3');
+            // Fluffy body (golden yellow with gradient)
+            const bodyGradient = ctx.createRadialGradient(x - 4, y - 3, 3, x, y, size);
+            bodyGradient.addColorStop(0, '#FFE67C');
+            bodyGradient.addColorStop(0.5, '#FFD700');
+            bodyGradient.addColorStop(1, '#F4C430');
             ctx.fillStyle = bodyGradient;
             ctx.beginPath();
-            ctx.ellipse(x, y + 2, size * 0.85, size * 0.95, 0, 0, Math.PI * 2);
+            ctx.arc(x, y, size * 0.9, 0, Math.PI * 2);
             ctx.fill();
 
-            // Tail feathers (back)
-            ctx.fillStyle = '#D3D3D3';
-            ctx.beginPath();
-            ctx.moveTo(x - size * 0.7, y);
-            ctx.lineTo(x - size * 1.2, y - size * 0.3);
-            ctx.lineTo(x - size * 0.9, y + size * 0.2);
-            ctx.closePath();
-            ctx.fill();
-            ctx.beginPath();
-            ctx.moveTo(x - size * 0.7, y - size * 0.2);
-            ctx.lineTo(x - size * 1.3, y - size * 0.5);
-            ctx.lineTo(x - size * 0.8, y);
-            ctx.closePath();
-            ctx.fill();
-
-            // Wings (spread out when flying)
-            if (flying) {
-                // Left wing (spread)
-                ctx.fillStyle = '#E0E0E0';
+            // Fluffy texture (small circles around body)
+            ctx.fillStyle = 'rgba(255, 235, 124, 0.6)';
+            for (let i = 0; i < 8; i++) {
+                const angle = (i / 8) * Math.PI * 2;
+                const fluffX = x + Math.cos(angle) * size * 0.7;
+                const fluffY = y + Math.sin(angle) * size * 0.7;
                 ctx.beginPath();
-                ctx.ellipse(x - size * 0.6, y - size * 0.1, size * 0.7, size * 0.4, -0.4, 0, Math.PI * 2);
+                ctx.arc(fluffX, fluffY, size * 0.25, 0, Math.PI * 2);
                 ctx.fill();
-                ctx.strokeStyle = '#C0C0C0';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(x - size * 0.3, y);
-                ctx.lineTo(x - size * 0.9, y - size * 0.2);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(x - size * 0.35, y + size * 0.1);
-                ctx.lineTo(x - size * 0.85, y);
-                ctx.stroke();
-
-                // Right wing (spread)
-                ctx.fillStyle = '#D8D8D8';
-                ctx.beginPath();
-                ctx.ellipse(x + size * 0.6, y - size * 0.1, size * 0.7, size * 0.4, 0.4, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.strokeStyle = '#B8B8B8';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(x + size * 0.3, y);
-                ctx.lineTo(x + size * 0.9, y - size * 0.2);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(x + size * 0.35, y + size * 0.1);
-                ctx.lineTo(x + size * 0.85, y);
-                ctx.stroke();
-            } else {
-                // Wing folded (darker shading)
-                ctx.fillStyle = '#E0E0E0';
-                ctx.beginPath();
-                ctx.ellipse(x + size * 0.2, y + 2, size * 0.4, size * 0.6, 0.3, 0, Math.PI * 2);
-                ctx.fill();
-                // Wing feather details
-                ctx.strokeStyle = '#C0C0C0';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.moveTo(x + size * 0.1, y - size * 0.2);
-                ctx.lineTo(x + size * 0.4, y);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(x + size * 0.15, y);
-                ctx.lineTo(x + size * 0.45, y + size * 0.2);
-                ctx.stroke();
             }
 
-            // Head
-            const headGradient = ctx.createRadialGradient(x + size * 0.3, y - size * 0.7, 2, x + size * 0.4, y - size * 0.6, size * 0.5);
-            headGradient.addColorStop(0, '#FFFFFF');
-            headGradient.addColorStop(0.7, '#F5F5DC');
-            headGradient.addColorStop(1, '#D3D3D3');
+            // Wings (tiny and cute, spread when flying)
+            if (flying) {
+                // Left wing (spread)
+                const leftWingGradient = ctx.createRadialGradient(x - size * 0.7, y - size * 0.1, 2, x - size * 0.6, y, size * 0.4);
+                leftWingGradient.addColorStop(0, '#FFE67C');
+                leftWingGradient.addColorStop(1, '#F4C430');
+                ctx.fillStyle = leftWingGradient;
+                ctx.beginPath();
+                ctx.ellipse(x - size * 0.7, y - size * 0.1, size * 0.5, size * 0.35, -0.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Right wing (spread)
+                const rightWingGradient = ctx.createRadialGradient(x + size * 0.7, y - size * 0.1, 2, x + size * 0.6, y, size * 0.4);
+                rightWingGradient.addColorStop(0, '#FFE67C');
+                rightWingGradient.addColorStop(1, '#F4C430');
+                ctx.fillStyle = rightWingGradient;
+                ctx.beginPath();
+                ctx.ellipse(x + size * 0.7, y - size * 0.1, size * 0.5, size * 0.35, 0.5, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                // Wing folded (small bump on side)
+                ctx.fillStyle = '#F4C430';
+                ctx.beginPath();
+                ctx.ellipse(x + size * 0.3, y, size * 0.35, size * 0.5, 0.3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Big cute head (slightly bigger than body for chick proportions)
+            const headGradient = ctx.createRadialGradient(x, y - size * 0.9, 3, x, y - size * 0.8, size * 0.65);
+            headGradient.addColorStop(0, '#FFE67C');
+            headGradient.addColorStop(0.5, '#FFD700');
+            headGradient.addColorStop(1, '#F4C430');
             ctx.fillStyle = headGradient;
             ctx.beginPath();
-            ctx.arc(x + size * 0.4, y - size * 0.6, size * 0.45, 0, Math.PI * 2);
+            ctx.arc(x, y - size * 0.8, size * 0.65, 0, Math.PI * 2);
             ctx.fill();
 
-            // Red comb on top of head
-            ctx.fillStyle = '#DC143C';
-            ctx.beginPath();
-            ctx.moveTo(x + size * 0.35, y - size * 0.95);
-            ctx.bezierCurveTo(x + size * 0.25, y - size * 1.1, x + size * 0.35, y - size * 1.15, x + size * 0.4, y - size * 1.0);
-            ctx.bezierCurveTo(x + size * 0.45, y - size * 1.15, x + size * 0.55, y - size * 1.1, x + size * 0.45, y - size * 0.95);
-            ctx.closePath();
-            ctx.fill();
-            // Comb shading
-            ctx.fillStyle = 'rgba(139, 0, 0, 0.3)';
-            ctx.beginPath();
-            ctx.moveTo(x + size * 0.42, y - size * 0.95);
-            ctx.bezierCurveTo(x + size * 0.45, y - size * 1.05, x + size * 0.5, y - size * 1.0, x + size * 0.45, y - size * 0.95);
-            ctx.closePath();
-            ctx.fill();
+            // Fluffy head texture
+            ctx.fillStyle = 'rgba(255, 235, 124, 0.5)';
+            for (let i = 0; i < 6; i++) {
+                const angle = (i / 6) * Math.PI * 2 - Math.PI / 2;
+                const fluffX = x + Math.cos(angle) * size * 0.5;
+                const fluffY = y - size * 0.8 + Math.sin(angle) * size * 0.5;
+                ctx.beginPath();
+                ctx.arc(fluffX, fluffY, size * 0.2, 0, Math.PI * 2);
+                ctx.fill();
+            }
 
-            // Red wattle under beak
-            ctx.fillStyle = '#DC143C';
+            // Small beak (orange, very small and cute)
+            ctx.fillStyle = '#FF8C00';
             ctx.beginPath();
-            ctx.ellipse(x + size * 0.55, y - size * 0.45, size * 0.15, size * 0.2, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Beak (yellow/orange)
-            ctx.fillStyle = '#FFA500';
-            ctx.beginPath();
-            ctx.moveTo(x + size * 0.65, y - size * 0.6);
-            ctx.lineTo(x + size * 0.9, y - size * 0.55);
-            ctx.lineTo(x + size * 0.65, y - size * 0.5);
-            ctx.closePath();
-            ctx.fill();
-            // Beak shading
-            ctx.fillStyle = 'rgba(255, 140, 0, 0.7)';
-            ctx.beginPath();
-            ctx.moveTo(x + size * 0.65, y - size * 0.55);
-            ctx.lineTo(x + size * 0.9, y - size * 0.55);
-            ctx.lineTo(x + size * 0.65, y - size * 0.5);
+            ctx.moveTo(x + size * 0.4, y - size * 0.8);
+            ctx.lineTo(x + size * 0.65, y - size * 0.75);
+            ctx.lineTo(x + size * 0.4, y - size * 0.7);
             ctx.closePath();
             ctx.fill();
 
-            // Eye (white with black pupil)
+            // Big cute eyes (larger for chick look)
+            // Left eye white
             ctx.fillStyle = 'white';
             ctx.beginPath();
-            ctx.arc(x + size * 0.5, y - size * 0.65, size * 0.12, 0, Math.PI * 2);
+            ctx.arc(x - size * 0.15, y - size * 0.9, size * 0.18, 0, Math.PI * 2);
             ctx.fill();
-            // Pupil
+            // Right eye white
+            ctx.beginPath();
+            ctx.arc(x + size * 0.15, y - size * 0.9, size * 0.18, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Left eye pupil (big and shiny)
             ctx.fillStyle = 'black';
             ctx.beginPath();
-            ctx.arc(x + size * 0.52, y - size * 0.65, size * 0.07, 0, Math.PI * 2);
+            ctx.arc(x - size * 0.12, y - size * 0.88, size * 0.1, 0, Math.PI * 2);
             ctx.fill();
-            // Eye highlight
+            // Right eye pupil
+            ctx.beginPath();
+            ctx.arc(x + size * 0.18, y - size * 0.88, size * 0.1, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Eye highlights (sparkle)
             ctx.fillStyle = 'white';
             ctx.beginPath();
-            ctx.arc(x + size * 0.54, y - size * 0.67, size * 0.03, 0, Math.PI * 2);
+            ctx.arc(x - size * 0.1, y - size * 0.92, size * 0.05, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + size * 0.2, y - size * 0.92, size * 0.05, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Tiny legs (orange, thin and cute)
+            ctx.strokeStyle = '#FF8C00';
+            ctx.lineWidth = 2.5;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(x - size * 0.25, y + size * 0.7);
+            ctx.lineTo(x - size * 0.25, y + size * 1.0);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x + size * 0.25, y + size * 0.7);
+            ctx.lineTo(x + size * 0.25, y + size * 1.0);
+            ctx.stroke();
+
+            // Tiny feet
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(x - size * 0.25, y + size * 1.0);
+            ctx.lineTo(x - size * 0.4, y + size * 1.05);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x - size * 0.25, y + size * 1.0);
+            ctx.lineTo(x - size * 0.15, y + size * 1.05);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x + size * 0.25, y + size * 1.0);
+            ctx.lineTo(x + size * 0.15, y + size * 1.05);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x + size * 0.25, y + size * 1.0);
+            ctx.lineTo(x + size * 0.4, y + size * 1.05);
+            ctx.stroke();
+
+            // Cute cheek blush (optional)
+            ctx.fillStyle = 'rgba(255, 182, 193, 0.4)';
+            ctx.beginPath();
+            ctx.ellipse(x - size * 0.4, y - size * 0.65, size * 0.15, size * 0.12, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(x + size * 0.4, y - size * 0.65, size * 0.15, size * 0.12, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Draw a white goose
+        function drawGoose(x, y, flying = false) {
+            const size = GRID_SIZE / 2 - 2;
+
+            // Shadow
+            if (flying) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+                ctx.beginPath();
+                ctx.ellipse(x, y + size + 30, size * 1.4, size * 0.4, 0, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+                ctx.beginPath();
+                ctx.ellipse(x, y + size + 2, size * 1.1, size * 0.35, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Body (white with gradient)
+            const bodyGradient = ctx.createRadialGradient(x - 4, y, 3, x, y + 2, size);
+            bodyGradient.addColorStop(0, '#FFFFFF');
+            bodyGradient.addColorStop(0.7, '#F0F0F0');
+            bodyGradient.addColorStop(1, '#E0E0E0');
+            ctx.fillStyle = bodyGradient;
+            ctx.beginPath();
+            ctx.ellipse(x, y + 2, size * 0.9, size * 1.1, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Tail feathers (back, fluffy)
+            ctx.fillStyle = '#E8E8E8';
+            ctx.beginPath();
+            ctx.ellipse(x - size * 0.9, y, size * 0.4, size * 0.6, -0.3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Wings
+            if (flying) {
+                // Spread wings
+                ctx.fillStyle = '#F5F5F5';
+                ctx.beginPath();
+                ctx.ellipse(x - size * 0.8, y - size * 0.2, size * 0.7, size * 0.4, -0.6, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(x + size * 0.8, y - size * 0.2, size * 0.7, size * 0.4, 0.6, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                // Folded wing
+                ctx.fillStyle = '#E8E8E8';
+                ctx.beginPath();
+                ctx.ellipse(x + size * 0.2, y, size * 0.5, size * 0.7, 0.2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Long neck
+            ctx.fillStyle = '#F8F8F8';
+            ctx.beginPath();
+            ctx.ellipse(x + size * 0.3, y - size * 0.6, size * 0.25, size * 0.7, 0.3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Head
+            const headGradient = ctx.createRadialGradient(x + size * 0.4, y - size * 1.1, 2, x + size * 0.4, y - size * 1.0, size * 0.45);
+            headGradient.addColorStop(0, '#FFFFFF');
+            headGradient.addColorStop(1, '#F0F0F0');
+            ctx.fillStyle = headGradient;
+            ctx.beginPath();
+            ctx.arc(x + size * 0.4, y - size * 1.0, size * 0.45, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Orange beak
+            ctx.fillStyle = '#FF8C00';
+            ctx.beginPath();
+            ctx.moveTo(x + size * 0.7, y - size * 1.0);
+            ctx.lineTo(x + size * 1.1, y - size * 0.95);
+            ctx.lineTo(x + size * 0.7, y - size * 0.9);
+            ctx.closePath();
+            ctx.fill();
+
+            // Eye
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(x + size * 0.5, y - size * 1.05, size * 0.08, 0, Math.PI * 2);
             ctx.fill();
 
             // Legs (orange)
             ctx.strokeStyle = '#FF8C00';
             ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
             ctx.beginPath();
-            ctx.moveTo(x - size * 0.2, y + size * 0.8);
+            ctx.moveTo(x - size * 0.2, y + size * 0.9);
             ctx.lineTo(x - size * 0.2, y + size * 1.2);
             ctx.stroke();
             ctx.beginPath();
-            ctx.moveTo(x + size * 0.2, y + size * 0.8);
+            ctx.moveTo(x + size * 0.2, y + size * 0.9);
             ctx.lineTo(x + size * 0.2, y + size * 1.2);
             ctx.stroke();
-            // Feet
-            ctx.lineWidth = 2;
+
+            // Webbed feet
+            ctx.fillStyle = '#FF8C00';
             ctx.beginPath();
             ctx.moveTo(x - size * 0.2, y + size * 1.2);
-            ctx.lineTo(x - size * 0.4, y + size * 1.3);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(x - size * 0.2, y + size * 1.2);
-            ctx.lineTo(x - size * 0.1, y + size * 1.3);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(x + size * 0.2, y + size * 1.2);
-            ctx.lineTo(x, y + size * 1.3);
-            ctx.stroke();
+            ctx.lineTo(x - size * 0.4, y + size * 1.25);
+            ctx.lineTo(x - size * 0.2, y + size * 1.3);
+            ctx.lineTo(x, y + size * 1.25);
+            ctx.closePath();
+            ctx.fill();
             ctx.beginPath();
             ctx.moveTo(x + size * 0.2, y + size * 1.2);
-            ctx.lineTo(x + size * 0.4, y + size * 1.3);
+            ctx.lineTo(x, y + size * 1.25);
+            ctx.lineTo(x + size * 0.2, y + size * 1.3);
+            ctx.lineTo(x + size * 0.4, y + size * 1.25);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        // Draw a spooky ghost
+        function drawGhost(x, y, flying = false) {
+            const size = GRID_SIZE / 2 - 2;
+
+            // Floating effect (ghosts always float)
+            const floatOffset = Math.sin(Date.now() / 300) * 5;
+            y -= floatOffset;
+
+            // Shadow (subtle for ghost)
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.beginPath();
+            ctx.ellipse(x, y + size + 5, size * 0.6, size * 0.2, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Ghost body (semi-transparent white)
+            ctx.globalAlpha = 0.85;
+            const ghostGradient = ctx.createRadialGradient(x, y - size * 0.5, 5, x, y, size);
+            ghostGradient.addColorStop(0, '#FFFFFF');
+            ghostGradient.addColorStop(0.7, '#F0F8FF');
+            ghostGradient.addColorStop(1, '#E0E8F0');
+            ctx.fillStyle = ghostGradient;
+            ctx.beginPath();
+            ctx.arc(x, y - size * 0.3, size * 0.9, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Wavy bottom
+            ctx.beginPath();
+            ctx.moveTo(x - size * 0.9, y);
+            for (let i = 0; i <= 6; i++) {
+                const waveX = x - size * 0.9 + (i * size * 0.3);
+                const waveY = y + size * 0.4 + (i % 2 === 0 ? size * 0.3 : 0);
+                ctx.lineTo(waveX, waveY);
+            }
+            ctx.lineTo(x + size * 0.9, y - size * 0.3);
+            ctx.arc(x, y - size * 0.3, size * 0.9, 0, Math.PI);
+            ctx.closePath();
+            ctx.fill();
+
+            // Eyes (black oval)
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.ellipse(x - size * 0.3, y - size * 0.4, size * 0.15, size * 0.25, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(x + size * 0.3, y - size * 0.4, size * 0.15, size * 0.25, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Mouth (O shape)
+            ctx.beginPath();
+            ctx.arc(x, y - size * 0.1, size * 0.2, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.globalAlpha = 1;
+        }
+
+        // Draw a military soldier
+        function drawMilitary(x, y, flying = false) {
+            const size = GRID_SIZE / 2 - 2;
+
+            // If knocked down, draw soldier lying on ground
+            if (militaryKnockedDown) {
+                // Progress through knockdown animation (0 = just hit, 1 = getting back up)
+                const knockdownProgress = militaryKnockdownTimer / 1500;
+
+                // Shadow (bigger when knocked down)
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+                ctx.beginPath();
+                ctx.ellipse(x, y + size * 0.5, size * 1.2, size * 0.4, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Rotation effect - falls down and gets back up
+                const rotation = knockdownProgress < 0.7 ? Math.PI / 2 : (1 - (knockdownProgress - 0.7) / 0.3) * Math.PI / 2;
+                const yOffset = knockdownProgress < 0.7 ? size * 0.3 : size * 0.3 * (1 - (knockdownProgress - 0.7) / 0.3);
+
+                ctx.save();
+                ctx.translate(x, y + yOffset);
+                ctx.rotate(rotation);
+
+                // Body (military green uniform)
+                ctx.fillStyle = '#4A5D23';
+                ctx.fillRect(-size * 0.5, -size * 0.2, size, size * 1.3);
+
+                // Arms (spread out when knocked down)
+                ctx.strokeStyle = '#4A5D23';
+                ctx.lineWidth = 8;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(-size * 0.5, 0);
+                ctx.lineTo(-size * 0.8, size * 0.5);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(size * 0.5, 0);
+                ctx.lineTo(size * 0.8, size * 0.5);
+                ctx.stroke();
+
+                // Head (skin tone)
+                ctx.fillStyle = '#D2A679';
+                ctx.beginPath();
+                ctx.arc(0, -size * 0.6, size * 0.55, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Military helmet
+                ctx.fillStyle = '#3D4A1F';
+                ctx.beginPath();
+                ctx.ellipse(0, -size * 0.9, size * 0.65, size * 0.4, 0, 0, Math.PI);
+                ctx.fill();
+
+                // Eyes (closed if just hit, opening as getting up)
+                if (knockdownProgress < 0.5) {
+                    // Eyes closed (lines)
+                    ctx.strokeStyle = 'black';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(-size * 0.3, -size * 0.6);
+                    ctx.lineTo(-size * 0.1, -size * 0.6);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(size * 0.1, -size * 0.6);
+                    ctx.lineTo(size * 0.3, -size * 0.6);
+                    ctx.stroke();
+                } else {
+                    // Eyes opening
+                    ctx.fillStyle = 'white';
+                    ctx.beginPath();
+                    ctx.arc(-size * 0.2, -size * 0.6, size * 0.12, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(size * 0.2, -size * 0.6, size * 0.12, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Pupils
+                    ctx.fillStyle = 'black';
+                    ctx.beginPath();
+                    ctx.arc(-size * 0.18, -size * 0.6, size * 0.06, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(size * 0.22, -size * 0.6, size * 0.06, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Legs (green pants)
+                ctx.strokeStyle = '#4A5D23';
+                ctx.lineWidth = 10;
+                ctx.beginPath();
+                ctx.moveTo(-size * 0.2, size * 0.9);
+                ctx.lineTo(-size * 0.2, size * 1.3);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(size * 0.2, size * 0.9);
+                ctx.lineTo(size * 0.2, size * 1.3);
+                ctx.stroke();
+
+                // Boots (black)
+                ctx.fillStyle = 'black';
+                ctx.fillRect(-size * 0.35, size * 1.2, size * 0.3, size * 0.2);
+                ctx.fillRect(size * 0.05, size * 1.2, size * 0.3, size * 0.2);
+
+                ctx.restore();
+                return;
+            }
+
+            // Normal standing soldier (when not knocked down)
+            // Shadow
+            if (flying) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+                ctx.beginPath();
+                ctx.ellipse(x, y + size + 30, size * 1.0, size * 0.4, 0, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                ctx.beginPath();
+                ctx.ellipse(x, y + size + 2, size * 0.7, size * 0.3, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Body (military green uniform)
+            ctx.fillStyle = '#4A5D23';
+            ctx.fillRect(x - size * 0.5, y - size * 0.2, size, size * 1.3);
+
+            // Arms
+            ctx.strokeStyle = '#4A5D23';
+            ctx.lineWidth = 8;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(x - size * 0.5, y);
+            ctx.lineTo(x - size * 0.8, y + size * 0.5);
             ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x + size * 0.5, y);
+            ctx.lineTo(x + size * 0.8, y + size * 0.5);
+            ctx.stroke();
+
+            // Head (skin tone)
+            ctx.fillStyle = '#D2A679';
+            ctx.beginPath();
+            ctx.arc(x, y - size * 0.6, size * 0.55, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Military helmet
+            ctx.fillStyle = '#3D4A1F';
+            ctx.beginPath();
+            ctx.ellipse(x, y - size * 0.9, size * 0.65, size * 0.4, 0, 0, Math.PI);
+            ctx.fill();
+
+            // Eyes
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(x - size * 0.2, y - size * 0.6, size * 0.12, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + size * 0.2, y - size * 0.6, size * 0.12, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Pupils
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(x - size * 0.18, y - size * 0.6, size * 0.06, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + size * 0.22, y - size * 0.6, size * 0.06, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Legs (green pants)
+            ctx.strokeStyle = '#4A5D23';
+            ctx.lineWidth = 10;
+            ctx.beginPath();
+            ctx.moveTo(x - size * 0.2, y + size * 0.9);
+            ctx.lineTo(x - size * 0.2, y + size * 1.3);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x + size * 0.2, y + size * 0.9);
+            ctx.lineTo(x + size * 0.2, y + size * 1.3);
+            ctx.stroke();
+
+            // Boots (black)
+            ctx.fillStyle = 'black';
+            ctx.fillRect(x - size * 0.35, y + size * 1.2, size * 0.3, size * 0.2);
+            ctx.fillRect(x + size * 0.05, y + size * 1.2, size * 0.3, size * 0.2);
+        }
+
+        // Draw a spotted dog
+        function drawDog(x, y, flying = false) {
+            // Smaller dog - reduce size by 30%
+            const size = (GRID_SIZE / 2 - 2) * 0.7;
+
+            // Shadow
+            if (flying) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+                ctx.beginPath();
+                ctx.ellipse(x, y + size + 20, size * 1.0, size * 0.35, 0, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                ctx.beginPath();
+                ctx.ellipse(x, y + size + 2, size * 0.8, size * 0.3, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Body (white base with realistic shading)
+            const bodyGradient = ctx.createRadialGradient(x - size * 0.2, y - size * 0.1, 2, x, y, size * 0.8);
+            bodyGradient.addColorStop(0, '#FFFFFF');
+            bodyGradient.addColorStop(0.7, '#F5F5F5');
+            bodyGradient.addColorStop(1, '#E8E8E8');
+            ctx.fillStyle = bodyGradient;
+            ctx.beginPath();
+            ctx.ellipse(x, y, size * 0.85, size * 0.7, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // More gray spots than black on body
+            // Gray spots (5 spots)
+            ctx.fillStyle = '#888888';
+            ctx.globalAlpha = 0.7;
+            ctx.beginPath();
+            ctx.arc(x - size * 0.5, y - size * 0.15, size * 0.22, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + size * 0.25, y + size * 0.15, size * 0.25, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x - size * 0.15, y + size * 0.25, size * 0.18, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + size * 0.45, y - size * 0.05, size * 0.2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x - size * 0.35, y + size * 0.35, size * 0.15, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Black spots (2 spots - fewer than gray)
+            ctx.fillStyle = '#2C2C2C';
+            ctx.globalAlpha = 0.8;
+            ctx.beginPath();
+            ctx.arc(x + size * 0.05, y - size * 0.25, size * 0.2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x - size * 0.25, y + size * 0.05, size * 0.16, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+
+            // Head (white with gradient shading)
+            const headGradient = ctx.createRadialGradient(x + size * 0.2, y - size * 0.75, 2, x + size * 0.3, y - size * 0.7, size * 0.5);
+            headGradient.addColorStop(0, '#FFFFFF');
+            headGradient.addColorStop(0.8, '#F5F5F5');
+            headGradient.addColorStop(1, '#E0E0E0');
+            ctx.fillStyle = headGradient;
+            ctx.beginPath();
+            ctx.arc(x + size * 0.3, y - size * 0.7, size * 0.55, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Gray spots on head (more realistic placement)
+            ctx.fillStyle = '#888888';
+            ctx.globalAlpha = 0.7;
+            ctx.beginPath();
+            ctx.arc(x + size * 0.15, y - size * 0.85, size * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + size * 0.45, y - size * 0.75, size * 0.22, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+
+            // Long floppy ears (down to mouth level) - more realistic
+            // Left ear - gray with darker tip
+            ctx.fillStyle = '#999999';
+            ctx.beginPath();
+            ctx.ellipse(x, y - size * 0.55, size * 0.23, size * 0.48, -0.4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#777777';
+            ctx.beginPath();
+            ctx.ellipse(x - size * 0.05, y - size * 0.25, size * 0.18, size * 0.25, -0.3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Right ear - lighter gray
+            ctx.fillStyle = '#AAAAAA';
+            ctx.beginPath();
+            ctx.ellipse(x + size * 0.6, y - size * 0.55, size * 0.23, size * 0.48, 0.4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#888888';
+            ctx.beginPath();
+            ctx.ellipse(x + size * 0.65, y - size * 0.25, size * 0.18, size * 0.25, 0.3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Snout with realistic shading
+            const snoutGradient = ctx.createRadialGradient(x + size * 0.5, y - size * 0.52, 2, x + size * 0.5, y - size * 0.48, size * 0.28);
+            snoutGradient.addColorStop(0, '#F0F0F0');
+            snoutGradient.addColorStop(0.6, '#E5E5E5');
+            snoutGradient.addColorStop(1, '#D5D5D5');
+            ctx.fillStyle = snoutGradient;
+            ctx.beginPath();
+            ctx.ellipse(x + size * 0.5, y - size * 0.48, size * 0.28, size * 0.22, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Nose (shiny black with highlight)
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(x + size * 0.6, y - size * 0.53, size * 0.13, 0, Math.PI * 2);
+            ctx.fill();
+            // Nose highlight for realism
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.beginPath();
+            ctx.arc(x + size * 0.57, y - size * 0.56, size * 0.05, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Eyes with more realistic details
+            // Eye whites
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(x + size * 0.2, y - size * 0.75, size * 0.12, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + size * 0.45, y - size * 0.8, size * 0.12, 0, Math.PI * 2);
+            ctx.fill();
+            // Eye pupils
+            ctx.fillStyle = '#1a1a1a';
+            ctx.beginPath();
+            ctx.arc(x + size * 0.22, y - size * 0.73, size * 0.08, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + size * 0.47, y - size * 0.78, size * 0.08, 0, Math.PI * 2);
+            ctx.fill();
+            // Eye highlights
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.beginPath();
+            ctx.arc(x + size * 0.24, y - size * 0.76, size * 0.03, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + size * 0.49, y - size * 0.81, size * 0.03, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Legs (white with subtle shading)
+            ctx.strokeStyle = '#F0F0F0';
+            ctx.lineWidth = 5;
+            ctx.lineCap = 'round';
+
+            // Front left leg
+            ctx.beginPath();
+            ctx.moveTo(x - size * 0.35, y + size * 0.55);
+            ctx.lineTo(x - size * 0.35, y + size * 0.95);
+            ctx.stroke();
+
+            // Front right leg
+            ctx.beginPath();
+            ctx.moveTo(x - size * 0.05, y + size * 0.55);
+            ctx.lineTo(x - size * 0.05, y + size * 0.95);
+            ctx.stroke();
+
+            // Back left leg
+            ctx.beginPath();
+            ctx.moveTo(x + size * 0.25, y + size * 0.55);
+            ctx.lineTo(x + size * 0.25, y + size * 0.95);
+            ctx.stroke();
+
+            // Back right leg
+            ctx.beginPath();
+            ctx.moveTo(x + size * 0.5, y + size * 0.55);
+            ctx.lineTo(x + size * 0.5, y + size * 0.95);
+            ctx.stroke();
+
+            // Paws (dark gray, realistic)
+            ctx.fillStyle = '#555555';
+            ['-0.35', '-0.05', '0.25', '0.5'].forEach((offset) => {
+                ctx.beginPath();
+                ctx.ellipse(x + size * parseFloat(offset), y + size * 0.95, size * 0.12, size * 0.08, 0, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Wagging tail (curved and fluffy)
+            const tailWag = Math.sin(Date.now() / 100) * 0.35;
+            ctx.strokeStyle = '#F0F0F0';
+            ctx.lineWidth = 5;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(x - size * 0.75, y);
+            ctx.bezierCurveTo(
+                x - size * 0.85, y - size * 0.25 + tailWag,
+                x - size * 0.75, y - size * 0.45 + tailWag,
+                x - size * 0.65, y - size * 0.55
+            );
+            ctx.stroke();
+
+            // Tail tip (darker gray)
+            ctx.fillStyle = '#AAAAAA';
+            ctx.beginPath();
+            ctx.arc(x - size * 0.65, y - size * 0.55, size * 0.15, 0, Math.PI * 2);
+            ctx.fill();
         }
 
         // Draw a scary grey wolf/dog
@@ -2432,8 +3187,8 @@
 
         // Check collision
         function checkCollision() {
-            // Don't check collision when flying
-            if (isFlying) return;
+            // Don't check collision when flying, ghost phasing, or military is knocked down
+            if (isFlying || ghostPhasing || militaryKnockedDown) return;
 
             cars.forEach(car => {
                 if (Math.floor(car.y) === player.worldY) {
@@ -2442,7 +3197,15 @@
                     const playerPos = player.x + 0.5;
 
                     if (playerPos >= carLeft && playerPos <= carRight) {
-                        endGame();
+                        // Military character has 2 lives - knock down and get back up
+                        if (selectedCharacter === 'military' && militaryLives > 1) {
+                            militaryLives--;
+                            militaryKnockedDown = true;
+                            militaryKnockdownTimer = 0; // Reset timer for knockdown animation (1.5 seconds)
+                            updatePowerDisplay();
+                        } else {
+                            endGame();
+                        }
                     }
                 }
             });
@@ -2451,6 +3214,27 @@
         // Handle keyboard input
         document.addEventListener('keydown', (e) => {
             if (gameOver) return;
+
+            // Space bar for character powers
+            if (e.key === ' ' || e.key === 'Spacebar') {
+                e.preventDefault();
+
+                // Goose honk - stops all cars for 5 seconds
+                if (selectedCharacter === 'goose' && gooseHonksRemaining > 0) {
+                    gooseHonksRemaining--;
+                    carsStoppedUntil = Date.now() + 5000; // Stop cars for 5 seconds
+                    updatePowerDisplay();
+                }
+
+                // Ghost phasing - phase through cars for 3 seconds
+                if (selectedCharacter === 'ghost' && !ghostPhasing) {
+                    ghostPhasing = true;
+                    ghostPhasingUntil = Date.now() + 3000; // Phase for 3 seconds
+                    updatePowerDisplay();
+                }
+
+                return;
+            }
 
             // Check flight movement delay
             if (isFlying && Date.now() - lastMoveTime < gameSettings.flightMovementDelay) {
@@ -2621,6 +3405,52 @@
             document.getElementById('coinDisplay').textContent = coins;
         }
 
+        function updatePowerDisplay() {
+            const powerDisplay = document.getElementById('powerDisplay');
+
+            // Emma (Dog) - always show speed boost indicator
+            if (selectedCharacter === 'dog') {
+                powerDisplay.innerHTML = '🐕 Emma - Speed Boost: +0.8%';
+                powerDisplay.classList.remove('active');
+            }
+            // Goose - show honk availability
+            else if (selectedCharacter === 'goose') {
+                const carsStopped = Date.now() < carsStoppedUntil;
+                if (carsStopped) {
+                    const timeRemaining = ((carsStoppedUntil - Date.now()) / 1000).toFixed(1);
+                    powerDisplay.innerHTML = '🦆 HONK ACTIVE: ' + timeRemaining + 's';
+                    powerDisplay.classList.add('active');
+                } else if (gooseHonksRemaining > 0) {
+                    powerDisplay.innerHTML = '🦆 Press SPACE to Honk (stops cars)';
+                    powerDisplay.classList.remove('active');
+                } else {
+                    powerDisplay.innerHTML = '🦆 Honk Used';
+                    powerDisplay.classList.remove('active');
+                }
+            }
+            // Military - show lives
+            else if (selectedCharacter === 'military') {
+                powerDisplay.innerHTML = '🪖 Lives: ' + '❤️'.repeat(militaryLives);
+                powerDisplay.classList.remove('active');
+            }
+            // Ghost - show phasing status
+            else if (selectedCharacter === 'ghost') {
+                if (ghostPhasing) {
+                    const timeRemaining = ((ghostPhasingUntil - Date.now()) / 1000).toFixed(1);
+                    powerDisplay.innerHTML = '👻 PHASING: ' + timeRemaining + 's';
+                    powerDisplay.classList.add('active');
+                } else {
+                    powerDisplay.innerHTML = '👻 Press SPACE to Phase (3s)';
+                    powerDisplay.classList.remove('active');
+                }
+            }
+            // Chick - no special power
+            else if (selectedCharacter === 'chick') {
+                powerDisplay.innerHTML = '🐥 No special power';
+                powerDisplay.classList.remove('active');
+            }
+        }
+
         function endGame() {
             gameOver = true;
 
@@ -2682,6 +3512,15 @@
             startingWorldY = ROWS - 2;
             maxWorldY = ROWS - 2;
 
+            // Reset character powers
+            gooseHonksRemaining = 1;
+            carsStoppedUntil = 0;
+            militaryLives = 2;
+            militaryKnockedDown = false;
+            militaryKnockdownTimer = 0;
+            ghostPhasing = false;
+            ghostPhasingUntil = 0;
+
             // Reset game over message
             document.getElementById('gameOver').querySelector('h2').textContent = 'GAME OVER!';
             document.getElementById('gameOver').querySelector('h2').style.color = '#ff6b6b';
@@ -2689,6 +3528,7 @@
 
             init();
             updateScoreDisplay();
+            updatePowerDisplay();
         }
 
         // Game loop with delta time for smooth 60fps
@@ -2699,6 +3539,7 @@
 
             update(deltaTime);
             draw();
+            updatePowerDisplay(); // Update power display every frame
             requestAnimationFrame(gameLoop);
         }
 
@@ -2892,8 +3733,95 @@
             }
         });
 
+        // Character selection function
+        function selectCharacter(character) {
+            selectedCharacter = character;
+
+            // Update active state in UI
+            document.querySelectorAll('.character-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            document.querySelector(`[data-character="${character}"]`).classList.add('active');
+
+            // Reset character powers when selecting new character
+            gooseHonksRemaining = 1;
+            carsStoppedUntil = 0;
+            militaryLives = 2;
+            militaryKnockedDown = false;
+            militaryKnockdownTimer = 0;
+            ghostPhasing = false;
+            ghostPhasingUntil = 0;
+
+            // Update power display immediately
+            updatePowerDisplay();
+
+            // Restart game with new character
+            if (gameStarted) {
+                restartGame();
+            }
+        }
+
+        // Render character previews
+        function renderCharacterPreviews() {
+            const previewSize = 60;
+            const centerX = previewSize / 2;
+            const centerY = previewSize / 2;
+
+            // Preview for each character
+            ['chick', 'goose', 'ghost', 'military', 'dog'].forEach(character => {
+                const canvas = document.getElementById(`preview-${character}`);
+                if (!canvas) return;
+
+                const previewCtx = canvas.getContext('2d');
+                canvas.width = previewSize;
+                canvas.height = previewSize;
+
+                // Clear canvas
+                previewCtx.clearRect(0, 0, previewSize, previewSize);
+
+                // Save the main context and temporarily use preview context
+                const originalCtx = ctx;
+                ctx = previewCtx;
+
+                // Draw the character (scaled down for preview)
+                const scale = 0.8;
+                previewCtx.save();
+                previewCtx.scale(scale, scale);
+
+                const adjustedX = centerX / scale;
+                const adjustedY = centerY / scale;
+
+                switch(character) {
+                    case 'chick':
+                        drawChick(adjustedX, adjustedY, false);
+                        break;
+                    case 'goose':
+                        drawGoose(adjustedX, adjustedY, false);
+                        break;
+                    case 'ghost':
+                        drawGhost(adjustedX, adjustedY, false);
+                        break;
+                    case 'military':
+                        drawMilitary(adjustedX, adjustedY, false);
+                        break;
+                    case 'dog':
+                        drawDog(adjustedX, adjustedY, false);
+                        break;
+                }
+
+                previewCtx.restore();
+
+                // Restore the main context
+                ctx = originalCtx;
+            });
+        }
+
         // Start game
         init();
+
+        // Render character previews after a short delay to ensure everything is loaded
+        setTimeout(renderCharacterPreviews, 100);
+
         requestAnimationFrame(gameLoop);
     </script>
 </body>
