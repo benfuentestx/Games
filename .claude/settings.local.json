@@ -4,7 +4,8 @@
       "Bash(git config:*)",
       "Bash(git add:*)",
       "Bash(git commit -m \"$(cat <<''EOF''\nInitial commit: Add Crossy Road game and gitignore\n\nCreated a simple browser-based Crossy Road game with:\n- Player controls using arrow keys\n- Moving cars on road lanes\n- Collision detection\n- Score and high score tracking\n- One life gameplay\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(start crossy-road.html)"
     ],
     "deny": [],
     "ask": []

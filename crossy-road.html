@@ -466,6 +466,14 @@
                     <label>Road Frequency (Every X rows):</label>
                     <input type="number" id="vehicleSpawnFrequency" min="2" max="10" value="3">
                 </div>
+                <div class="setting-item">
+                    <label>Min Road Lanes:</label>
+                    <input type="number" id="minLanes" min="1" max="5" value="1">
+                </div>
+                <div class="setting-item">
+                    <label>Max Road Lanes:</label>
+                    <input type="number" id="maxLanes" min="1" max="5" value="5">
+                </div>
             </div>
 
             <div class="settings-section">
@@ -553,6 +561,10 @@
             vehicleSpeedMin: 0.02,
             vehicleSpeedMax: 0.05,
             vehicleSpawnFrequency: 3, // Every X rows
+
+            // Road lane settings
+            minLanes: 1,
+            maxLanes: 5,
 
             // Flight power-up settings
             coinsForFlight: 5,
@@ -646,25 +658,35 @@
 
         // Initialize game
         function init() {
-            // Create initial roads (every other row is a road)
-            for (let row = 0; row < ROWS; row++) {
-                if (row % gameSettings.vehicleSpawnFrequency === 0 && row !== ROWS - 2) {
+            // Create initial roads with random lane counts
+            let currentRow = 0;
+            while (currentRow < ROWS) {
+                if (currentRow % gameSettings.vehicleSpawnFrequency === 0 && currentRow !== ROWS - 2) {
+                    const laneRange = gameSettings.maxLanes - gameSettings.minLanes + 1;
+                    const laneCount = Math.floor(Math.random() * laneRange) + gameSettings.minLanes;
                     roads.push({
-                        row: row,
+                        row: currentRow,
+                        laneCount: laneCount,
                         direction: Math.random() > 0.5 ? 1 : -1
                     });
+                    currentRow += laneCount; // Skip rows that are part of this road
+                } else {
+                    currentRow++;
                 }
             }
 
-            // Create initial cars
+            // Create initial cars (distributed across lanes)
             roads.forEach(road => {
                 const numCars = Math.floor(Math.random() * (gameSettings.vehicleDensityMax - gameSettings.vehicleDensityMin + 1)) + gameSettings.vehicleDensityMin;
                 for (let i = 0; i < numCars; i++) {
                     const vehicleType = getRandomVehicleType();
                     const speedRange = gameSettings.vehicleSpeedMax - gameSettings.vehicleSpeedMin;
+                    // Pick a random lane within this road
+                    const lane = Math.floor(Math.random() * road.laneCount);
+                    const laneY = road.row + lane;
                     cars.push({
                         x: Math.random() * COLS,
-                        y: road.row,
+                        y: laneY,
                         width: vehicleType.width,
                         speed: (Math.random() * speedRange + gameSettings.vehicleSpeedMin) * road.direction,
                         color: getRandomCarColor(),
@@ -683,28 +705,36 @@
             // Generate roads ahead of the camera (going into negative rows)
             while (minRowGenerated > currentTopRow - 10) {
                 if (minRowGenerated % gameSettings.vehicleSpawnFrequency === 0 && minRowGenerated !== startingWorldY) {
+                    const laneRange = gameSettings.maxLanes - gameSettings.minLanes + 1;
+                    const laneCount = Math.floor(Math.random() * laneRange) + gameSettings.minLanes;
                     const newRoad = {
                         row: minRowGenerated,
+                        laneCount: laneCount,
                         direction: Math.random() > 0.5 ? 1 : -1
                     };
                     roads.push(newRoad);
 
-                    // Add cars to the new road
+                    // Add cars to the new road (distributed across lanes)
                     const numCars = Math.floor(Math.random() * (gameSettings.vehicleDensityMax - gameSettings.vehicleDensityMin + 1)) + gameSettings.vehicleDensityMin;
                     for (let i = 0; i < numCars; i++) {
                         const vehicleType = getRandomVehicleType();
                         const speedRange = gameSettings.vehicleSpeedMax - gameSettings.vehicleSpeedMin;
+                        // Pick a random lane within this road
+                        const lane = Math.floor(Math.random() * laneCount);
+                        const laneY = newRoad.row + lane;
                         cars.push({
                             x: Math.random() * COLS,
-                            y: newRoad.row,
+                            y: laneY,
                             width: vehicleType.width,
                             speed: (Math.random() * speedRange + gameSettings.vehicleSpeedMin) * newRoad.direction,
                             color: getRandomCarColor(),
                             type: vehicleType.type
                         });
                     }
+                    minRowGenerated -= laneCount; // Skip rows that are part of this road
+                } else {
+                    minRowGenerated--;
                 }
-                minRowGenerated--;
             }
 
             // Clean up old roads and cars that are far behind
@@ -883,9 +913,11 @@
                 const screenY = (worldRow - cameraY) * GRID_SIZE;
                 if (screenY < -GRID_SIZE || screenY > canvas.height) continue;
 
-                const isRoad = roads.some(road => road.row === worldRow);
-                if (isRoad) {
-                    draw3DRoad(screenY);
+                // Check if this row is part of a multi-lane road
+                const road = roads.find(road => worldRow >= road.row && worldRow < road.row + road.laneCount);
+                if (road) {
+                    const laneIndex = worldRow - road.row;
+                    draw3DRoad(screenY, road.laneCount, laneIndex, road.direction);
                 } else {
                     draw3DGrass(screenY);
                 }
@@ -952,7 +984,7 @@
         }
 
         // Draw 3D road with perspective
-        function draw3DRoad(y) {
+        function draw3DRoad(y, laneCount, laneIndex, direction) {
             // Base road
             const roadGradient = ctx.createLinearGradient(0, y, 0, y + GRID_SIZE);
             roadGradient.addColorStop(0, '#3a3a3a');
@@ -961,27 +993,41 @@
             ctx.fillStyle = roadGradient;
             ctx.fillRect(0, y, canvas.width, GRID_SIZE);
 
-            // Road edge highlights for 3D effect
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
-            ctx.fillRect(0, y, canvas.width, 2);
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-            ctx.fillRect(0, y + GRID_SIZE - 2, canvas.width, 2);
+            // Road edge highlights for 3D effect (only on top/bottom edges of entire road)
+            if (laneIndex === 0) {
+                // Top edge of the road
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                ctx.fillRect(0, y, canvas.width, 2);
+            }
+            if (laneIndex === laneCount - 1) {
+                // Bottom edge of the road
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                ctx.fillRect(0, y + GRID_SIZE - 2, canvas.width, 2);
+            }
 
-            // Road lines with 3D appearance
-            ctx.strokeStyle = '#FFD700';
-            ctx.lineWidth = 3;
-            ctx.setLineDash([15, 10]);
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-            ctx.shadowBlur = 2;
-            ctx.shadowOffsetY = 1;
-            ctx.beginPath();
-            ctx.moveTo(0, y + GRID_SIZE / 2);
-            ctx.lineTo(canvas.width, y + GRID_SIZE / 2);
-            ctx.stroke();
-            ctx.setLineDash([]);
-            ctx.shadowColor = 'transparent';
-            ctx.shadowBlur = 0;
-            ctx.shadowOffsetY = 0;
+            // Lane markings
+            if (laneCount === 1) {
+                // Single lane - no lane markings (all cars go same direction)
+            } else {
+                // Multi-lane roads - add white dashed lines between lanes
+                if (laneIndex < laneCount - 1) {
+                    // Draw lane divider at bottom of this lane
+                    ctx.strokeStyle = '#FFFFFF';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([10, 10]);
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                    ctx.shadowBlur = 2;
+                    ctx.shadowOffsetY = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(0, y + GRID_SIZE);
+                    ctx.lineTo(canvas.width, y + GRID_SIZE);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.shadowColor = 'transparent';
+                    ctx.shadowBlur = 0;
+                    ctx.shadowOffsetY = 0;
+                }
+            }
         }
 
         // Draw 3D grass with texture
@@ -2178,6 +2224,8 @@
             document.getElementById('vehicleSpeedMin').value = gameSettings.vehicleSpeedMin;
             document.getElementById('vehicleSpeedMax').value = gameSettings.vehicleSpeedMax;
             document.getElementById('vehicleSpawnFrequency').value = gameSettings.vehicleSpawnFrequency;
+            document.getElementById('minLanes').value = gameSettings.minLanes;
+            document.getElementById('maxLanes').value = gameSettings.maxLanes;
             document.getElementById('coinsForFlight').value = gameSettings.coinsForFlight;
             document.getElementById('flightDuration').value = gameSettings.flightDuration / 1000; // Convert to seconds
             document.getElementById('flightMovementDelay').value = gameSettings.flightMovementDelay;
@@ -2197,6 +2245,8 @@
             gameSettings.vehicleSpeedMin = parseFloat(document.getElementById('vehicleSpeedMin').value);
             gameSettings.vehicleSpeedMax = parseFloat(document.getElementById('vehicleSpeedMax').value);
             gameSettings.vehicleSpawnFrequency = parseInt(document.getElementById('vehicleSpawnFrequency').value);
+            gameSettings.minLanes = parseInt(document.getElementById('minLanes').value);
+            gameSettings.maxLanes = parseInt(document.getElementById('maxLanes').value);
             gameSettings.coinsForFlight = parseInt(document.getElementById('coinsForFlight').value);
             gameSettings.flightDuration = parseFloat(document.getElementById('flightDuration').value) * 1000; // Convert to ms
             gameSettings.flightMovementDelay = parseInt(document.getElementById('flightMovementDelay').value);
@@ -2222,6 +2272,8 @@
                     vehicleSpeedMin: 0.02,
                     vehicleSpeedMax: 0.05,
                     vehicleSpawnFrequency: 3,
+                    minLanes: 1,
+                    maxLanes: 5,
                     coinsForFlight: 5,
                     flightDuration: 5000,
                     flightMovementDelay: 150,
