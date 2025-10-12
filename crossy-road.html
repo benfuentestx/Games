@@ -1035,8 +1035,8 @@
                 <div class="shop-card-status">Click to Purchase</div>
             </div>
             <div class="shop-card" data-powerup="slowmo" onclick="buyPowerUp('slowmo')">
-                <div class="shop-card-icon">⚡</div>
-                <h3>Slow Motion</h3>
+                <div class="shop-card-icon">🏍️</div>
+                <h3>Tron Motorcycle</h3>
                 <p class="shop-card-desc">Slows all cars to 30% speed for 8 seconds. Press O to activate. Epic lightning trail!</p>
                 <div class="shop-card-price">💰 3 Coins</div>
                 <div class="shop-card-status">Click to Purchase</div>
@@ -1260,10 +1260,11 @@
         let tsunamiEndTime = 0; // Timestamp when tsunami ends
         let tsunamiX = 0; // Current X position of the tsunami wave
         let tsunamiDirection = 1; // 1 for left-to-right, -1 for right-to-left
-        let powerUpSlowMotionOwned = false; // Player has purchased Slow Motion
-        let slowMotionActive = false; // Slow motion is currently active
-        let slowMotionEndTime = 0; // Timestamp when slow motion ends
+        let powerUpSlowMotionOwned = false; // Player has purchased Tron Motorcycle
+        let slowMotionActive = false; // Tron Motorcycle is currently active
+        let slowMotionEndTime = 0; // Timestamp when Tron Motorcycle ends
         let lightningTrail = []; // Array to store lightning trail positions
+        let motorcycleWheelRotation = 0; // Rotation angle for motorcycle wheels
 
         // Game Settings (configurable) - MUST BE DEFINED FIRST
         let gameSettings = {
@@ -1672,7 +1673,7 @@
             const carsShouldStop = Date.now() < carsStoppedUntil || powerUpFreezeTime;
 
             if (!carsShouldStop) {
-                // Apply slow motion effect to cars (30% speed)
+                // Apply Tron Motorcycle effect to cars (30% speed)
                 const carSpeedMultiplier = slowMotionActive ? 0.3 : 1.0;
 
                 cars.forEach(car => {
@@ -1809,7 +1810,7 @@
                 }
             }
 
-            // Update slow motion effect
+            // Update Tron Motorcycle effect
             if (slowMotionActive) {
                 // Add current player position to lightning trail
                 lightningTrail.push({
@@ -1821,10 +1822,14 @@
                 // Remove old trail positions (older than 1200ms for much longer trail)
                 lightningTrail = lightningTrail.filter(pos => Date.now() - pos.time < 1200);
 
-                // Check if slow motion has ended
+                // Rotate motorcycle wheels based on movement speed
+                motorcycleWheelRotation += deltaTime * 0.01; // Smooth continuous rotation
+
+                // Check if Tron Motorcycle has ended
                 if (Date.now() >= slowMotionEndTime) {
                     slowMotionActive = false;
                     lightningTrail = [];
+                    motorcycleWheelRotation = 0; // Reset rotation
                 }
             }
 
@@ -2057,7 +2062,7 @@
                 }
             }
 
-            // Draw lightning trail if slow motion is active - multiple layers like photo
+            // Draw lightning trail if Tron Motorcycle is active - multiple layers like photo
             if (slowMotionActive && lightningTrail.length > 1) {
                 for (let i = 0; i < lightningTrail.length - 1; i++) {
                     const pos = lightningTrail[i];
@@ -2072,37 +2077,38 @@
                     const x2 = nextPos.x * GRID_SIZE + GRID_SIZE / 2;
                     const y2 = screenY2 + GRID_SIZE / 2;
 
-                    // Layer 1: Outer glow (widest, most transparent) - orange glow
-                    ctx.strokeStyle = `rgba(255, 120, 0, ${alpha * 0.3})`;
+                    // Layer 1: Outer glow (widest, most transparent) - Tron orange/yellow glow
+                    ctx.strokeStyle = `rgba(255, 200, 0, ${alpha * 0.35})`;
                     ctx.lineWidth = 35;
                     ctx.lineCap = 'round';
-                    ctx.shadowBlur = 40;
-                    ctx.shadowColor = `rgba(255, 150, 0, ${alpha * 0.5})`;
+                    ctx.shadowBlur = 45;
+                    ctx.shadowColor = `rgba(255, 180, 0, ${alpha * 0.6})`;
                     ctx.beginPath();
                     ctx.moveTo(x1, y1);
                     ctx.lineTo(x2, y2);
                     ctx.stroke();
 
-                    // Layer 2: Middle glow - bright yellow
-                    ctx.strokeStyle = `rgba(255, 220, 0, ${alpha * 0.6})`;
+                    // Layer 2: Middle glow - bright cyan-blue Tron glow
+                    ctx.strokeStyle = `rgba(0, 200, 255, ${alpha * 0.5})`;
                     ctx.lineWidth = 22;
-                    ctx.shadowBlur = 35;
-                    ctx.shadowColor = `rgba(255, 200, 0, ${alpha * 0.8})`;
+                    ctx.shadowBlur = 40;
+                    ctx.shadowColor = `rgba(0, 220, 255, ${alpha * 0.8})`;
                     ctx.beginPath();
                     ctx.moveTo(x1, y1);
                     ctx.lineTo(x2, y2);
                     ctx.stroke();
 
-                    // Layer 3: Core trail - intense white-yellow
+                    // Layer 3: Core trail - Tron cyan-white with yellow accents
                     const gradient = ctx.createLinearGradient(x1, y1, x2, y2);
                     gradient.addColorStop(0, `rgba(255, 255, 255, ${alpha * 0.95})`);
-                    gradient.addColorStop(0.3, `rgba(255, 255, 200, ${alpha * 1.0})`);
-                    gradient.addColorStop(0.6, `rgba(255, 220, 100, ${alpha * 0.95})`);
-                    gradient.addColorStop(1, `rgba(255, 180, 0, ${alpha * 0.9})`);
+                    gradient.addColorStop(0.25, `rgba(0, 255, 255, ${alpha * 1.0})`);
+                    gradient.addColorStop(0.5, `rgba(0, 200, 255, ${alpha * 0.95})`);
+                    gradient.addColorStop(0.75, `rgba(255, 220, 0, ${alpha * 0.9})`);
+                    gradient.addColorStop(1, `rgba(255, 180, 0, ${alpha * 0.85})`);
                     ctx.strokeStyle = gradient;
-                    ctx.lineWidth = 12 + Math.sin(Date.now() * 0.015 + i) * 3;
-                    ctx.shadowBlur = 25;
-                    ctx.shadowColor = `rgba(255, 255, 255, ${alpha})`;
+                    ctx.lineWidth = 14 + Math.sin(Date.now() * 0.015 + i) * 4;
+                    ctx.shadowBlur = 30;
+                    ctx.shadowColor = `rgba(0, 255, 255, ${alpha})`;
                     ctx.beginPath();
                     ctx.moveTo(x1, y1);
                     ctx.lineTo(x2, y2);
@@ -2146,6 +2152,31 @@
                 }
                 // Reset shadow
                 ctx.shadowBlur = 0;
+
+                // Draw "TRON" text overlay
+                const tronOpacity = Math.sin(Date.now() * 0.005) * 0.3 + 0.7; // Pulsing effect
+                ctx.save();
+                ctx.font = 'bold 32px Poppins, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+
+                // Outer glow
+                ctx.shadowBlur = 25;
+                ctx.shadowColor = `rgba(255, 180, 0, ${tronOpacity})`;
+                ctx.fillStyle = `rgba(0, 0, 0, 0.6)`;
+                ctx.fillText('TRON', canvas.width / 2, 80);
+
+                // Main text with gradient
+                const tronGradient = ctx.createLinearGradient(canvas.width / 2 - 50, 80, canvas.width / 2 + 50, 80);
+                tronGradient.addColorStop(0, `rgba(0, 255, 255, ${tronOpacity})`);
+                tronGradient.addColorStop(0.5, `rgba(255, 255, 255, ${tronOpacity})`);
+                tronGradient.addColorStop(1, `rgba(255, 200, 0, ${tronOpacity})`);
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = `rgba(0, 255, 255, ${tronOpacity * 0.8})`;
+                ctx.fillStyle = tronGradient;
+                ctx.fillText('TRON', canvas.width / 2, 80);
+
+                ctx.restore();
             }
 
             // Draw player (chicken) with camera offset using smooth render positions and hop offset
@@ -2973,24 +3004,257 @@
             return '#' + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
         }
 
+        // Draw Tron Motorcycle (red/orange with glowing cyan wheels)
+        function drawTronMotorcycle(x, y) {
+            ctx.save();
+
+            const bikeWidth = 45;
+            const bikeHeight = 28;
+            const wheelRadius = 12;
+
+            // Shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.beginPath();
+            ctx.ellipse(x, y + 18, bikeWidth * 0.7, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Back wheel - glowing cyan/blue with rotation
+            const backWheelX = x - 15;
+            const backWheelY = y + 8;
+
+            // Wheel outer glow
+            const wheelGlow = ctx.createRadialGradient(backWheelX, backWheelY, 0, backWheelX, backWheelY, wheelRadius + 8);
+            wheelGlow.addColorStop(0, 'rgba(0, 255, 255, 0.6)');
+            wheelGlow.addColorStop(0.5, 'rgba(0, 200, 255, 0.4)');
+            wheelGlow.addColorStop(1, 'rgba(0, 150, 255, 0)');
+            ctx.fillStyle = wheelGlow;
+            ctx.beginPath();
+            ctx.arc(backWheelX, backWheelY, wheelRadius + 8, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Wheel rim - dark with cyan edge
+            ctx.fillStyle = '#1a1a2e';
+            ctx.beginPath();
+            ctx.arc(backWheelX, backWheelY, wheelRadius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Wheel cyan ring (glowing edge)
+            ctx.strokeStyle = '#00ffff';
+            ctx.lineWidth = 3;
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#00ffff';
+            ctx.beginPath();
+            ctx.arc(backWheelX, backWheelY, wheelRadius - 2, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // Rotating spokes (Tron style energy lines)
+            ctx.save();
+            ctx.translate(backWheelX, backWheelY);
+            ctx.rotate(motorcycleWheelRotation);
+            for (let i = 0; i < 4; i++) {
+                ctx.rotate(Math.PI / 2);
+                const spokeGradient = ctx.createLinearGradient(0, 0, 0, wheelRadius - 4);
+                spokeGradient.addColorStop(0, 'rgba(0, 255, 255, 0.9)');
+                spokeGradient.addColorStop(1, 'rgba(255, 200, 0, 0.7)');
+                ctx.strokeStyle = spokeGradient;
+                ctx.lineWidth = 2;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#00ffff';
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(0, wheelRadius - 4);
+                ctx.stroke();
+            }
+            ctx.restore();
+
+            // Front wheel - same style
+            const frontWheelX = x + 18;
+            const frontWheelY = y + 8;
+
+            // Wheel outer glow
+            const frontWheelGlow = ctx.createRadialGradient(frontWheelX, frontWheelY, 0, frontWheelX, frontWheelY, wheelRadius + 8);
+            frontWheelGlow.addColorStop(0, 'rgba(0, 255, 255, 0.6)');
+            frontWheelGlow.addColorStop(0.5, 'rgba(0, 200, 255, 0.4)');
+            frontWheelGlow.addColorStop(1, 'rgba(0, 150, 255, 0)');
+            ctx.fillStyle = frontWheelGlow;
+            ctx.beginPath();
+            ctx.arc(frontWheelX, frontWheelY, wheelRadius + 8, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Wheel rim
+            ctx.fillStyle = '#1a1a2e';
+            ctx.beginPath();
+            ctx.arc(frontWheelX, frontWheelY, wheelRadius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Wheel cyan ring
+            ctx.strokeStyle = '#00ffff';
+            ctx.lineWidth = 3;
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#00ffff';
+            ctx.beginPath();
+            ctx.arc(frontWheelX, frontWheelY, wheelRadius - 2, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // Rotating spokes
+            ctx.save();
+            ctx.translate(frontWheelX, frontWheelY);
+            ctx.rotate(motorcycleWheelRotation);
+            for (let i = 0; i < 4; i++) {
+                ctx.rotate(Math.PI / 2);
+                const spokeGradient = ctx.createLinearGradient(0, 0, 0, wheelRadius - 4);
+                spokeGradient.addColorStop(0, 'rgba(0, 255, 255, 0.9)');
+                spokeGradient.addColorStop(1, 'rgba(255, 200, 0, 0.7)');
+                ctx.strokeStyle = spokeGradient;
+                ctx.lineWidth = 2;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#00ffff';
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(0, wheelRadius - 4);
+                ctx.stroke();
+            }
+            ctx.restore();
+
+            // Bike body frame - dark base
+            ctx.fillStyle = '#2a2a3e';
+            ctx.beginPath();
+            ctx.moveTo(backWheelX, backWheelY - 5);
+            ctx.lineTo(frontWheelX, frontWheelY - 5);
+            ctx.lineTo(frontWheelX + 5, frontWheelY - 15);
+            ctx.lineTo(x, y - 12);
+            ctx.lineTo(backWheelX - 5, backWheelY - 8);
+            ctx.closePath();
+            ctx.fill();
+
+            // Main bike body - red/orange gradient
+            const bodyGradient = ctx.createLinearGradient(x - 20, y - 10, x + 20, y - 10);
+            bodyGradient.addColorStop(0, '#ff0000');
+            bodyGradient.addColorStop(0.4, '#cc0000');
+            bodyGradient.addColorStop(0.6, '#ff4500');
+            bodyGradient.addColorStop(1, '#ff6600');
+
+            // Rear section
+            ctx.fillStyle = bodyGradient;
+            ctx.beginPath();
+            ctx.ellipse(backWheelX + 3, backWheelY - 8, 10, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Mid section
+            ctx.fillStyle = '#dd0000';
+            ctx.beginPath();
+            ctx.moveTo(backWheelX + 5, backWheelY - 8);
+            ctx.lineTo(x + 5, y - 10);
+            ctx.lineTo(x + 8, y - 5);
+            ctx.lineTo(backWheelX + 8, backWheelY - 4);
+            ctx.closePath();
+            ctx.fill();
+
+            // Front cowl (sleek design)
+            ctx.fillStyle = bodyGradient;
+            ctx.beginPath();
+            ctx.moveTo(x, y - 12);
+            ctx.quadraticCurveTo(x + 12, y - 15, frontWheelX + 8, y - 8);
+            ctx.lineTo(frontWheelX + 5, y - 2);
+            ctx.quadraticCurveTo(x + 5, y - 5, x, y - 8);
+            ctx.closePath();
+            ctx.fill();
+
+            // Glowing cyan accent lines on body
+            ctx.strokeStyle = '#00ffff';
+            ctx.lineWidth = 2;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#00ffff';
+            ctx.beginPath();
+            ctx.moveTo(backWheelX + 2, backWheelY - 12);
+            ctx.lineTo(x + 10, y - 13);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x + 8, y - 8);
+            ctx.lineTo(frontWheelX + 6, y - 10);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // Orange accent glow lines
+            ctx.strokeStyle = '#ff8800';
+            ctx.lineWidth = 1.5;
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = '#ff6600';
+            ctx.beginPath();
+            ctx.moveTo(backWheelX, backWheelY - 6);
+            ctx.lineTo(frontWheelX, frontWheelY - 6);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // Front headlight (bright cyan glow)
+            const headlightGradient = ctx.createRadialGradient(frontWheelX + 8, y - 8, 0, frontWheelX + 8, y - 8, 8);
+            headlightGradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+            headlightGradient.addColorStop(0.3, 'rgba(0, 255, 255, 0.8)');
+            headlightGradient.addColorStop(1, 'rgba(0, 200, 255, 0)');
+            ctx.fillStyle = headlightGradient;
+            ctx.beginPath();
+            ctx.arc(frontWheelX + 8, y - 8, 8, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Headlight beam
+            const beamGradient = ctx.createLinearGradient(frontWheelX + 8, y - 8, frontWheelX + 40, y - 8);
+            beamGradient.addColorStop(0, 'rgba(0, 255, 255, 0.3)');
+            beamGradient.addColorStop(1, 'rgba(0, 255, 255, 0)');
+            ctx.fillStyle = beamGradient;
+            ctx.beginPath();
+            ctx.moveTo(frontWheelX + 8, y - 13);
+            ctx.lineTo(frontWheelX + 40, y - 18);
+            ctx.lineTo(frontWheelX + 40, y + 2);
+            ctx.lineTo(frontWheelX + 8, y - 3);
+            ctx.closePath();
+            ctx.fill();
+
+            // Draw rider (small silhouette)
+            ctx.fillStyle = '#1a1a1a';
+            // Rider body
+            ctx.beginPath();
+            ctx.ellipse(x - 5, y - 18, 6, 10, -0.2, 0, Math.PI * 2);
+            ctx.fill();
+            // Rider head with cyan visor glow
+            ctx.fillStyle = '#0a0a0a';
+            ctx.beginPath();
+            ctx.arc(x - 3, y - 25, 5, 0, Math.PI * 2);
+            ctx.fill();
+            // Cyan visor
+            ctx.fillStyle = '#00ffff';
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = '#00ffff';
+            ctx.fillRect(x - 6, y - 26, 6, 2);
+            ctx.shadowBlur = 0;
+
+            ctx.restore();
+        }
+
         // Main character drawing function
         function drawCharacter(x, y, flying = false) {
-            switch(selectedCharacter) {
-                case 'chick':
-                    drawChick(x, y, flying);
-                    break;
-                case 'goose':
-                    drawGoose(x, y, flying);
-                    break;
-                case 'ghost':
-                    drawGhost(x, y, flying);
-                    break;
-                case 'military':
-                    drawMilitary(x, y, flying);
-                    break;
-                case 'dog':
-                    drawDog(x, y, flying);
-                    break;
+            // If Tron Motorcycle is active, draw motorcycle instead of character
+            if (slowMotionActive) {
+                drawTronMotorcycle(x, y);
+            } else {
+                switch(selectedCharacter) {
+                    case 'chick':
+                        drawChick(x, y, flying);
+                        break;
+                    case 'goose':
+                        drawGoose(x, y, flying);
+                        break;
+                    case 'ghost':
+                        drawGhost(x, y, flying);
+                        break;
+                    case 'military':
+                        drawMilitary(x, y, flying);
+                        break;
+                    case 'dog':
+                        drawDog(x, y, flying);
+                        break;
+                }
             }
         }
 
@@ -4605,10 +4869,10 @@
                 return;
             }
 
-            // O key for Slow Motion activation
+            // O key for Tron Motorcycle activation
             if ((e.key === 'o' || e.key === 'O') && powerUpSlowMotionOwned && !slowMotionActive && gameStarted && !inShop) {
                 e.preventDefault();
-                // Activate Slow Motion
+                // Activate Tron Motorcycle
                 slowMotionActive = true;
                 slowMotionEndTime = Date.now() + 8000; // 8 seconds
                 lightningTrail = []; // Clear trail
@@ -5403,7 +5667,7 @@
                     break;
 
                 case 'slowmo':
-                    // Give player Slow Motion power-up
+                    // Give player Tron Motorcycle power-up
                     powerUpSlowMotionOwned = true;
                     if (shopItem) {
                         shopItem.classList.add('purchased');
