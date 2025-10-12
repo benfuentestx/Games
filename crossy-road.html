@@ -1265,6 +1265,8 @@
         let slowMotionEndTime = 0; // Timestamp when Tron Motorcycle ends
         let lightningTrail = []; // Array to store lightning trail positions
         let motorcycleWheelRotation = 0; // Rotation angle for motorcycle wheels
+        let cameraZoom = 1.0; // Camera zoom level (1.0 = normal, higher = zoomed in)
+        let cameraOffsetX = 0; // Camera horizontal offset for side view
 
         // Game Settings (configurable) - MUST BE DEFINED FIRST
         let gameSettings = {
@@ -1825,12 +1827,22 @@
                 // Rotate motorcycle wheels based on movement speed
                 motorcycleWheelRotation += deltaTime * 0.01; // Smooth continuous rotation
 
+                // Smoothly zoom in camera (target 2.2x zoom)
+                cameraZoom += (2.2 - cameraZoom) * 0.1;
+
+                // Camera offset to the right side of motorcycle (like camera on stick 6 feet away)
+                cameraOffsetX += (-180 - cameraOffsetX) * 0.1; // Negative = camera moves left, showing right side
+
                 // Check if Tron Motorcycle has ended
                 if (Date.now() >= slowMotionEndTime) {
                     slowMotionActive = false;
                     lightningTrail = [];
                     motorcycleWheelRotation = 0; // Reset rotation
                 }
+            } else {
+                // Smoothly zoom out camera back to normal
+                cameraZoom += (1.0 - cameraZoom) * 0.1;
+                cameraOffsetX += (0 - cameraOffsetX) * 0.1;
             }
 
             // Update airstrike animation
@@ -1943,6 +1955,18 @@
 
             ctx.fillStyle = skyGradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Apply camera zoom and offset for Tron Motorcycle effect
+            ctx.save();
+
+            // Calculate zoom center point (center of canvas)
+            const zoomCenterX = canvas.width / 2;
+            const zoomCenterY = canvas.height / 2;
+
+            // Translate to center, apply zoom and offset, then translate back
+            ctx.translate(zoomCenterX, zoomCenterY);
+            ctx.scale(cameraZoom, cameraZoom);
+            ctx.translate(-zoomCenterX + cameraOffsetX, -zoomCenterY);
 
             // Calculate visible rows
             const startRow = Math.floor(cameraY);
@@ -2363,6 +2387,9 @@
                     ctx.fillRect(waveX - 80 + crestOffset, y, 160, 15);
                 }
             }
+
+            // Restore canvas context (undo zoom and offset transformations)
+            ctx.restore();
         }
 
         // Helper function to darken a color for night time
@@ -3004,23 +3031,23 @@
             return '#' + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
         }
 
-        // Draw Tron Motorcycle (red/orange with glowing cyan wheels)
+        // Draw Tron Motorcycle (red/orange with glowing cyan wheels) - FACING FORWARD/RIGHT
         function drawTronMotorcycle(x, y) {
             ctx.save();
 
-            const bikeWidth = 45;
-            const bikeHeight = 28;
-            const wheelRadius = 12;
+            const bikeLength = 55;
+            const bikeHeight = 35;
+            const wheelRadius = 14;
 
-            // Shadow
+            // Shadow (elongated forward)
             ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
             ctx.beginPath();
-            ctx.ellipse(x, y + 18, bikeWidth * 0.7, 8, 0, 0, Math.PI * 2);
+            ctx.ellipse(x + 15, y + 22, bikeLength * 0.8, 10, 0, 0, Math.PI * 2);
             ctx.fill();
 
-            // Back wheel - glowing cyan/blue with rotation
-            const backWheelX = x - 15;
-            const backWheelY = y + 8;
+            // Back wheel (left side when facing right) - glowing cyan/blue with rotation
+            const backWheelX = x - 8;
+            const backWheelY = y + 10;
 
             // Wheel outer glow
             const wheelGlow = ctx.createRadialGradient(backWheelX, backWheelY, 0, backWheelX, backWheelY, wheelRadius + 8);
@@ -3068,9 +3095,9 @@
             }
             ctx.restore();
 
-            // Front wheel - same style
-            const frontWheelX = x + 18;
-            const frontWheelY = y + 8;
+            // Front wheel (right side when facing right) - same style
+            const frontWheelX = x + 35;
+            const frontWheelY = y + 10;
 
             // Wheel outer glow
             const frontWheelGlow = ctx.createRadialGradient(frontWheelX, frontWheelY, 0, frontWheelX, frontWheelY, wheelRadius + 8);
@@ -3118,116 +3145,140 @@
             }
             ctx.restore();
 
-            // Bike body frame - dark base
-            ctx.fillStyle = '#2a2a3e';
-            ctx.beginPath();
-            ctx.moveTo(backWheelX, backWheelY - 5);
-            ctx.lineTo(frontWheelX, frontWheelY - 5);
-            ctx.lineTo(frontWheelX + 5, frontWheelY - 15);
-            ctx.lineTo(x, y - 12);
-            ctx.lineTo(backWheelX - 5, backWheelY - 8);
-            ctx.closePath();
-            ctx.fill();
-
-            // Main bike body - red/orange gradient
-            const bodyGradient = ctx.createLinearGradient(x - 20, y - 10, x + 20, y - 10);
+            // Main bike body - red/orange gradient (facing forward/right)
+            const bodyGradient = ctx.createLinearGradient(backWheelX, y, frontWheelX, y);
             bodyGradient.addColorStop(0, '#ff0000');
-            bodyGradient.addColorStop(0.4, '#cc0000');
+            bodyGradient.addColorStop(0.3, '#cc0000');
             bodyGradient.addColorStop(0.6, '#ff4500');
             bodyGradient.addColorStop(1, '#ff6600');
 
-            // Rear section
+            // Lower body frame connecting wheels
+            ctx.fillStyle = '#2a2a3e';
+            ctx.fillRect(backWheelX, backWheelY - 3, frontWheelX - backWheelX, 6);
+
+            // Main body (sleek elongated shape pointing right)
             ctx.fillStyle = bodyGradient;
             ctx.beginPath();
-            ctx.ellipse(backWheelX + 3, backWheelY - 8, 10, 8, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Mid section
-            ctx.fillStyle = '#dd0000';
-            ctx.beginPath();
-            ctx.moveTo(backWheelX + 5, backWheelY - 8);
-            ctx.lineTo(x + 5, y - 10);
-            ctx.lineTo(x + 8, y - 5);
-            ctx.lineTo(backWheelX + 8, backWheelY - 4);
+            // Start from back
+            ctx.moveTo(backWheelX - 5, backWheelY - 5);
+            ctx.lineTo(backWheelX - 5, backWheelY - 18);
+            ctx.lineTo(backWheelX + 8, backWheelY - 22);
+            // Mid section (seat area)
+            ctx.lineTo(x + 10, y - 20);
+            ctx.lineTo(x + 18, y - 18);
+            // Front fairing (aerodynamic cowl)
+            ctx.lineTo(frontWheelX - 5, frontWheelY - 15);
+            ctx.quadraticCurveTo(frontWheelX + 12, frontWheelY - 12, frontWheelX + 15, frontWheelY - 5);
+            // Bottom edge
+            ctx.lineTo(frontWheelX, frontWheelY);
+            ctx.lineTo(backWheelX, backWheelY);
             ctx.closePath();
             ctx.fill();
 
-            // Front cowl (sleek design)
-            ctx.fillStyle = bodyGradient;
+            // Top fairing (darker red for depth)
+            ctx.fillStyle = '#aa0000';
             ctx.beginPath();
-            ctx.moveTo(x, y - 12);
-            ctx.quadraticCurveTo(x + 12, y - 15, frontWheelX + 8, y - 8);
-            ctx.lineTo(frontWheelX + 5, y - 2);
-            ctx.quadraticCurveTo(x + 5, y - 5, x, y - 8);
+            ctx.moveTo(backWheelX + 5, backWheelY - 22);
+            ctx.lineTo(x + 12, y - 24);
+            ctx.lineTo(x + 22, y - 22);
+            ctx.lineTo(frontWheelX, frontWheelY - 16);
+            ctx.lineTo(frontWheelX - 8, frontWheelY - 15);
+            ctx.lineTo(x + 10, y - 20);
             ctx.closePath();
             ctx.fill();
 
-            // Glowing cyan accent lines on body
+            // Windshield (semi-transparent cyan tint)
+            ctx.fillStyle = 'rgba(0, 200, 255, 0.2)';
+            ctx.beginPath();
+            ctx.moveTo(x + 8, y - 22);
+            ctx.quadraticCurveTo(x + 18, y - 24, x + 25, y - 20);
+            ctx.lineTo(x + 20, y - 16);
+            ctx.lineTo(x + 12, y - 18);
+            ctx.closePath();
+            ctx.fill();
+
+            // Glowing cyan accent lines on body (horizontal racing stripes)
             ctx.strokeStyle = '#00ffff';
-            ctx.lineWidth = 2;
-            ctx.shadowBlur = 10;
+            ctx.lineWidth = 2.5;
+            ctx.shadowBlur = 12;
             ctx.shadowColor = '#00ffff';
             ctx.beginPath();
-            ctx.moveTo(backWheelX + 2, backWheelY - 12);
-            ctx.lineTo(x + 10, y - 13);
+            ctx.moveTo(backWheelX, backWheelY - 14);
+            ctx.lineTo(frontWheelX + 10, frontWheelY - 10);
             ctx.stroke();
             ctx.beginPath();
-            ctx.moveTo(x + 8, y - 8);
-            ctx.lineTo(frontWheelX + 6, y - 10);
+            ctx.moveTo(backWheelX + 5, backWheelY - 10);
+            ctx.lineTo(frontWheelX + 8, frontWheelY - 6);
             ctx.stroke();
             ctx.shadowBlur = 0;
 
-            // Orange accent glow lines
+            // Orange accent glow lines (lower stripe)
             ctx.strokeStyle = '#ff8800';
-            ctx.lineWidth = 1.5;
-            ctx.shadowBlur = 8;
+            ctx.lineWidth = 2;
+            ctx.shadowBlur = 10;
             ctx.shadowColor = '#ff6600';
             ctx.beginPath();
-            ctx.moveTo(backWheelX, backWheelY - 6);
-            ctx.lineTo(frontWheelX, frontWheelY - 6);
+            ctx.moveTo(backWheelX + 3, backWheelY - 2);
+            ctx.lineTo(frontWheelX + 5, frontWheelY - 2);
             ctx.stroke();
             ctx.shadowBlur = 0;
 
-            // Front headlight (bright cyan glow)
-            const headlightGradient = ctx.createRadialGradient(frontWheelX + 8, y - 8, 0, frontWheelX + 8, y - 8, 8);
+            // Front headlight (bright cyan glow at the very front)
+            const headlightX = frontWheelX + 15;
+            const headlightY = frontWheelY - 5;
+            const headlightGradient = ctx.createRadialGradient(headlightX, headlightY, 0, headlightX, headlightY, 10);
             headlightGradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-            headlightGradient.addColorStop(0.3, 'rgba(0, 255, 255, 0.8)');
+            headlightGradient.addColorStop(0.4, 'rgba(0, 255, 255, 0.9)');
             headlightGradient.addColorStop(1, 'rgba(0, 200, 255, 0)');
             ctx.fillStyle = headlightGradient;
             ctx.beginPath();
-            ctx.arc(frontWheelX + 8, y - 8, 8, 0, Math.PI * 2);
+            ctx.arc(headlightX, headlightY, 10, 0, Math.PI * 2);
             ctx.fill();
 
-            // Headlight beam
-            const beamGradient = ctx.createLinearGradient(frontWheelX + 8, y - 8, frontWheelX + 40, y - 8);
-            beamGradient.addColorStop(0, 'rgba(0, 255, 255, 0.3)');
+            // Headlight beam (pointing forward to the right)
+            const beamGradient = ctx.createLinearGradient(headlightX, headlightY, headlightX + 60, headlightY);
+            beamGradient.addColorStop(0, 'rgba(0, 255, 255, 0.4)');
             beamGradient.addColorStop(1, 'rgba(0, 255, 255, 0)');
             ctx.fillStyle = beamGradient;
             ctx.beginPath();
-            ctx.moveTo(frontWheelX + 8, y - 13);
-            ctx.lineTo(frontWheelX + 40, y - 18);
-            ctx.lineTo(frontWheelX + 40, y + 2);
-            ctx.lineTo(frontWheelX + 8, y - 3);
+            ctx.moveTo(headlightX, headlightY - 12);
+            ctx.lineTo(headlightX + 60, headlightY - 20);
+            ctx.lineTo(headlightX + 60, headlightY + 20);
+            ctx.lineTo(headlightX, headlightY + 12);
             ctx.closePath();
             ctx.fill();
 
-            // Draw rider (small silhouette)
+            // Draw rider (leaning forward on the bike)
+            // Rider legs
             ctx.fillStyle = '#1a1a1a';
-            // Rider body
+            ctx.fillRect(x - 2, y - 8, 5, 12);
+
+            // Rider body (leaning forward)
             ctx.beginPath();
-            ctx.ellipse(x - 5, y - 18, 6, 10, -0.2, 0, Math.PI * 2);
+            ctx.ellipse(x + 2, y - 15, 8, 12, 0.3, 0, Math.PI * 2);
             ctx.fill();
-            // Rider head with cyan visor glow
+
+            // Rider head with helmet
             ctx.fillStyle = '#0a0a0a';
             ctx.beginPath();
-            ctx.arc(x - 3, y - 25, 5, 0, Math.PI * 2);
+            ctx.arc(x + 8, y - 22, 6, 0, Math.PI * 2);
             ctx.fill();
-            // Cyan visor
+
+            // Cyan visor (horizontal stripe on helmet)
             ctx.fillStyle = '#00ffff';
-            ctx.shadowBlur = 8;
+            ctx.shadowBlur = 10;
             ctx.shadowColor = '#00ffff';
-            ctx.fillRect(x - 6, y - 26, 6, 2);
+            ctx.fillRect(x + 4, y - 23, 8, 3);
             ctx.shadowBlur = 0;
+
+            // Rider arms (reaching forward to handlebars)
+            ctx.strokeStyle = '#1a1a1a';
+            ctx.lineWidth = 4;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(x + 2, y - 12);
+            ctx.lineTo(x + 20, y - 14);
+            ctx.stroke();
 
             ctx.restore();
         }
