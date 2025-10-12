@@ -1389,15 +1389,23 @@
         function init() {
             // Create initial roads with random lane counts
             let currentRow = 0;
+            const playerStartRow = ROWS - 2;
             while (currentRow < ROWS) {
-                if (currentRow % gameSettings.vehicleSpawnFrequency === 0 && currentRow !== ROWS - 2) {
+                if (currentRow % gameSettings.vehicleSpawnFrequency === 0) {
                     const laneRange = gameSettings.maxLanes - gameSettings.minLanes + 1;
                     const laneCount = Math.floor(Math.random() * laneRange) + gameSettings.minLanes;
-                    roads.push({
-                        row: currentRow,
-                        laneCount: laneCount,
-                        direction: Math.random() > 0.5 ? 1 : -1
-                    });
+
+                    // Check if this road would overlap with player starting position
+                    const roadEndRow = currentRow + laneCount - 1;
+                    const wouldOverlapPlayer = currentRow <= playerStartRow && roadEndRow >= playerStartRow;
+
+                    if (!wouldOverlapPlayer) {
+                        roads.push({
+                            row: currentRow,
+                            laneCount: laneCount,
+                            direction: Math.random() > 0.5 ? 1 : -1
+                        });
+                    }
                     currentRow += laneCount; // Skip rows that are part of this road
                 } else {
                     currentRow++;
@@ -1581,8 +1589,8 @@
                 updateMonsters(deltaTime);
             }
 
-            // Update wolf chase timer when not chasing
-            if (!wolfChasing) {
+            // Update wolf chase timer when not chasing (only after game has started)
+            if (!wolfChasing && gameStarted) {
                 timeSinceLastForwardMove += deltaTime;
 
                 // If timer expires, teleport wolf behind chicken and start chasing
@@ -1595,8 +1603,8 @@
                 }
             }
 
-            // Once wolf starts chasing, he moves forward in world space
-            if (wolfChasing) {
+            // Once wolf starts chasing, he moves forward in world space (only if game has started)
+            if (wolfChasing && gameStarted) {
                 // Wolf moves forward (decreasing worldY) at configured jumps per second
                 const wolfMovement = (gameSettings.wolfSpeed / 1000) * deltaTime;
                 wolfWorldY -= wolfMovement;
@@ -2057,12 +2065,14 @@
                 }
             });
 
-            // Draw wolf chasing from behind
-            // Wolf has his own world Y position and X position (tracks with delay)
-            const wolfScreenY = (wolfWorldY - cameraY) * GRID_SIZE;
-            // Only draw if wolf is on screen
-            if (wolfScreenY >= -GRID_SIZE && wolfScreenY <= canvas.height + GRID_SIZE) {
-                drawWolf(wolfRenderX * GRID_SIZE + GRID_SIZE / 2, wolfScreenY + GRID_SIZE / 2);
+            // Draw wolf chasing from behind (only if game has started)
+            if (gameStarted) {
+                // Wolf has his own world Y position and X position (tracks with delay)
+                const wolfScreenY = (wolfWorldY - cameraY) * GRID_SIZE;
+                // Only draw if wolf is on screen
+                if (wolfScreenY >= -GRID_SIZE && wolfScreenY <= canvas.height + GRID_SIZE) {
+                    drawWolf(wolfRenderX * GRID_SIZE + GRID_SIZE / 2, wolfScreenY + GRID_SIZE / 2);
+                }
             }
 
             // Draw monsters (horror mode)
@@ -5254,6 +5264,12 @@
             militaryKnockdownTimer = 0;
             ghostPhasing = false;
             ghostPhasingUntil = 0;
+
+            // Reset day/night cycle and monsters (horror mode)
+            isNightTime = false;
+            dayNightTimer = 0;
+            timeOfDayTransition = 0;
+            monsters = [];
 
             // Reset game over message
             document.getElementById('gameOver').querySelector('h2').textContent = 'GAME OVER!';
