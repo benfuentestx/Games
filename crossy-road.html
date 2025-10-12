@@ -1034,6 +1034,13 @@
                 <div class="shop-card-price">💰 5 Coins</div>
                 <div class="shop-card-status">Click to Purchase</div>
             </div>
+            <div class="shop-card" data-powerup="slowmo" onclick="buyPowerUp('slowmo')">
+                <div class="shop-card-icon">⚡</div>
+                <h3>Slow Motion</h3>
+                <p class="shop-card-desc">Slows all cars to 30% speed for 8 seconds. Press O to activate. Epic lightning trail!</p>
+                <div class="shop-card-price">💰 3 Coins</div>
+                <div class="shop-card-status">Click to Purchase</div>
+            </div>
         </div>
     </div>
 
@@ -1225,6 +1232,9 @@
         let shopUnlocked = false; // Shop unlocks at score 70
         let shopBuildingWorldY = null; // Position of shop building on map
         let shopBuildingX = 2; // Left side of map (column 2)
+        let shop2Unlocked = false; // Second shop unlocks at score 190
+        let shop2BuildingWorldY = null; // Position of second shop building on map
+        let shop2BuildingX = 12; // Right side of map (column 12)
         let inShop = false; // True when player is in the shop interface
         let shopCooldown = 0; // Timestamp when player can enter shop again
         let powerUpSpeedBoost = 1.0; // Speed boost multiplier (1.009 when active)
@@ -1250,6 +1260,10 @@
         let tsunamiEndTime = 0; // Timestamp when tsunami ends
         let tsunamiX = 0; // Current X position of the tsunami wave
         let tsunamiDirection = 1; // 1 for left-to-right, -1 for right-to-left
+        let powerUpSlowMotionOwned = false; // Player has purchased Slow Motion
+        let slowMotionActive = false; // Slow motion is currently active
+        let slowMotionEndTime = 0; // Timestamp when slow motion ends
+        let lightningTrail = []; // Array to store lightning trail positions
 
         // Game Settings (configurable) - MUST BE DEFINED FIRST
         let gameSettings = {
@@ -1658,8 +1672,11 @@
             const carsShouldStop = Date.now() < carsStoppedUntil || powerUpFreezeTime;
 
             if (!carsShouldStop) {
+                // Apply slow motion effect to cars (30% speed)
+                const carSpeedMultiplier = slowMotionActive ? 0.3 : 1.0;
+
                 cars.forEach(car => {
-                    car.x += car.speed * timeScale;
+                    car.x += car.speed * timeScale * carSpeedMultiplier;
 
                     // Wrap around
                     if (car.speed > 0 && car.x > COLS + 2) {
@@ -1679,7 +1696,7 @@
                 });
             }
 
-            // Tsunami: make cars tumble when wave hits them
+            // Tsunami: make cars tumble when wave hits them and push to road edges
             if (tsunamiActive) {
                 cars.forEach(car => {
                     const carCenterX = car.x + car.width / 2;
@@ -1693,21 +1710,28 @@
                         car.tumbleRotation = 0;
                         // Push speed to the side (same direction as wave)
                         car.tumbleSpeed = tsunamiDirection * 0.8;
+                        car.tsunamiStartTime = Date.now(); // Track when tsunami hit this car
                     }
 
-                    // Update tumbling cars
+                    // Update tumbling cars - push them to the edge
                     if (car.tumbling) {
-                        car.x += car.tumbleSpeed * timeScale;
-                        car.tumbleRotation += 0.3 * timeScale; // Rotate as it tumbles
-                        car.tumbleSpeed *= 0.98; // Slow down over time
+                        // Determine target edge based on wave direction
+                        const targetX = tsunamiDirection === 1 ? COLS - car.width : 0;
+
+                        // Push towards edge if not there yet
+                        if (Math.abs(car.x - targetX) > 0.1) {
+                            car.x += car.tumbleSpeed * timeScale;
+                            car.tumbleRotation += 0.3 * timeScale; // Rotate as it tumbles
+                            car.tumbleSpeed *= 0.95; // Slow down as approaching edge
+                        } else {
+                            // Reached edge - stop tumbling and rotation
+                            car.x = targetX;
+                            car.tumbleRotation = Math.floor(car.tumbleRotation / (Math.PI * 2)) * (Math.PI * 2); // Snap to nearest full rotation
+                        }
                     }
                 });
 
-                // Remove cars that have tumbled off screen
-                cars = cars.filter(car => {
-                    if (!car.tumbling) return true;
-                    return car.x > -5 && car.x < COLS + 5;
-                });
+                // Don't remove tumbling cars - keep them at edges
             }
 
             // Check coin collection
@@ -1737,10 +1761,28 @@
                 shopBuildingWorldY = player.worldY - 5; // 5 rows ahead
             }
 
+            // Second shop unlock at 190 jumps
+            if (score >= 190 && !shop2Unlocked) {
+                shop2Unlocked = true;
+                // Spawn second shop building ahead of player (5 rows forward on grass)
+                shop2BuildingWorldY = player.worldY - 5; // 5 rows ahead
+            }
+
             // Check if player enters shop building (larger detection area)
             if (shopUnlocked && shopBuildingWorldY !== null && !inShop && Date.now() >= shopCooldown) {
                 const distanceY = Math.abs(player.worldY - shopBuildingWorldY);
                 const distanceX = Math.abs(player.x - shopBuildingX);
+
+                // Enter shop if within 2 tiles of building center
+                if (distanceY < 2 && distanceX < 2) {
+                    enterShop();
+                }
+            }
+
+            // Check if player enters second shop building
+            if (shop2Unlocked && shop2BuildingWorldY !== null && !inShop && Date.now() >= shopCooldown) {
+                const distanceY = Math.abs(player.worldY - shop2BuildingWorldY);
+                const distanceX = Math.abs(player.x - shop2BuildingX);
 
                 // Enter shop if within 2 tiles of building center
                 if (distanceY < 2 && distanceX < 2) {
@@ -1761,6 +1803,28 @@
                 // Check if tsunami has ended
                 if (Date.now() >= tsunamiEndTime) {
                     tsunamiActive = false;
+
+                    // Reset all tumbling cars - remove them to spawn fresh ones
+                    cars = cars.filter(car => !car.tumbling);
+                }
+            }
+
+            // Update slow motion effect
+            if (slowMotionActive) {
+                // Add current player position to lightning trail
+                lightningTrail.push({
+                    x: player.renderX,
+                    y: player.renderWorldY,
+                    time: Date.now()
+                });
+
+                // Remove old trail positions (older than 1200ms for much longer trail)
+                lightningTrail = lightningTrail.filter(pos => Date.now() - pos.time < 1200);
+
+                // Check if slow motion has ended
+                if (Date.now() >= slowMotionEndTime) {
+                    slowMotionActive = false;
+                    lightningTrail = [];
                 }
             }
 
@@ -1983,6 +2047,105 @@
                 if (shopScreenY >= -GRID_SIZE * 3 && shopScreenY <= canvas.height) {
                     drawShopBuilding(shopBuildingX * GRID_SIZE, shopScreenY);
                 }
+            }
+
+            // Draw second shop building if unlocked
+            if (shop2Unlocked && shop2BuildingWorldY !== null) {
+                const shop2ScreenY = (shop2BuildingWorldY - cameraY) * GRID_SIZE;
+                if (shop2ScreenY >= -GRID_SIZE * 3 && shop2ScreenY <= canvas.height) {
+                    drawShopBuilding(shop2BuildingX * GRID_SIZE, shop2ScreenY);
+                }
+            }
+
+            // Draw lightning trail if slow motion is active - multiple layers like photo
+            if (slowMotionActive && lightningTrail.length > 1) {
+                for (let i = 0; i < lightningTrail.length - 1; i++) {
+                    const pos = lightningTrail[i];
+                    const nextPos = lightningTrail[i + 1];
+                    const age = (Date.now() - pos.time) / 1200; // 0 to 1 (now uses 1200ms)
+                    const alpha = 1 - age;
+
+                    const screenY1 = (pos.y - cameraY) * GRID_SIZE;
+                    const screenY2 = (nextPos.y - cameraY) * GRID_SIZE;
+                    const x1 = pos.x * GRID_SIZE + GRID_SIZE / 2;
+                    const y1 = screenY1 + GRID_SIZE / 2;
+                    const x2 = nextPos.x * GRID_SIZE + GRID_SIZE / 2;
+                    const y2 = screenY2 + GRID_SIZE / 2;
+
+                    // Layer 1: Outer glow (widest, most transparent) - orange glow
+                    ctx.strokeStyle = `rgba(255, 120, 0, ${alpha * 0.3})`;
+                    ctx.lineWidth = 35;
+                    ctx.lineCap = 'round';
+                    ctx.shadowBlur = 40;
+                    ctx.shadowColor = `rgba(255, 150, 0, ${alpha * 0.5})`;
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+
+                    // Layer 2: Middle glow - bright yellow
+                    ctx.strokeStyle = `rgba(255, 220, 0, ${alpha * 0.6})`;
+                    ctx.lineWidth = 22;
+                    ctx.shadowBlur = 35;
+                    ctx.shadowColor = `rgba(255, 200, 0, ${alpha * 0.8})`;
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+
+                    // Layer 3: Core trail - intense white-yellow
+                    const gradient = ctx.createLinearGradient(x1, y1, x2, y2);
+                    gradient.addColorStop(0, `rgba(255, 255, 255, ${alpha * 0.95})`);
+                    gradient.addColorStop(0.3, `rgba(255, 255, 200, ${alpha * 1.0})`);
+                    gradient.addColorStop(0.6, `rgba(255, 220, 100, ${alpha * 0.95})`);
+                    gradient.addColorStop(1, `rgba(255, 180, 0, ${alpha * 0.9})`);
+                    ctx.strokeStyle = gradient;
+                    ctx.lineWidth = 12 + Math.sin(Date.now() * 0.015 + i) * 3;
+                    ctx.shadowBlur = 25;
+                    ctx.shadowColor = `rgba(255, 255, 255, ${alpha})`;
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+
+                    // Layer 4: Bright center line - pure white
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.9})`;
+                    ctx.lineWidth = 4;
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = `rgba(255, 255, 255, ${alpha})`;
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+
+                    // Add multiple lightning sparks (like in the photo)
+                    if (Math.random() < 0.5) {
+                        for (let j = 0; j < 2; j++) {
+                            ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.8})`;
+                            ctx.lineWidth = 2 + Math.random() * 2;
+                            ctx.shadowBlur = 25;
+                            ctx.shadowColor = `rgba(255, 200, 0, ${alpha})`;
+                            const offsetX = (Math.random() - 0.5) * 35;
+                            const offsetY = (Math.random() - 0.5) * 35;
+                            ctx.beginPath();
+                            ctx.moveTo(x1, y1);
+                            ctx.lineTo(x1 + offsetX, y1 + offsetY);
+                            ctx.stroke();
+                        }
+                    }
+
+                    // Add streak particles (bright dots along the trail)
+                    if (i % 2 === 0 && alpha > 0.5) {
+                        ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+                        ctx.shadowBlur = 15;
+                        ctx.shadowColor = `rgba(255, 220, 0, ${alpha})`;
+                        ctx.beginPath();
+                        ctx.arc(x1, y1, 3 + Math.random() * 2, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+                // Reset shadow
+                ctx.shadowBlur = 0;
             }
 
             // Draw player (chicken) with camera offset using smooth render positions and hop offset
@@ -4442,6 +4605,24 @@
                 return;
             }
 
+            // O key for Slow Motion activation
+            if ((e.key === 'o' || e.key === 'O') && powerUpSlowMotionOwned && !slowMotionActive && gameStarted && !inShop) {
+                e.preventDefault();
+                // Activate Slow Motion
+                slowMotionActive = true;
+                slowMotionEndTime = Date.now() + 8000; // 8 seconds
+                lightningTrail = []; // Clear trail
+
+                // Mark as used - player needs to buy again
+                powerUpSlowMotionOwned = false;
+                const slowmoShopItem = document.querySelector('[data-powerup="slowmo"]');
+                if (slowmoShopItem) {
+                    slowmoShopItem.classList.remove('purchased');
+                    slowmoShopItem.querySelector('.shop-card-status').textContent = 'Click to Purchase';
+                }
+                return;
+            }
+
             // Check flight movement delay
             if (isFlying && Date.now() - lastMoveTime < gameSettings.flightMovementDelay) {
                 e.preventDefault();
@@ -4668,6 +4849,29 @@
             }
 
             gameOver = true;
+
+            // Reset all purchased power-ups on death
+            powerUpSpeedBoost = 1.0;
+            powerUpSpeedBoostActive = false;
+            powerUpFreezeTime = false;
+            powerUpExtraLives = 0;
+            powerUpAirstrikeOwned = false;
+            powerUpRainbowOwned = false;
+            powerUpTsunamiOwned = false;
+            powerUpSlowMotionOwned = false;
+            rainbowRoadActive = false;
+            tsunamiActive = false;
+            slowMotionActive = false;
+            lightningTrail = [];
+
+            // Hide airstrike code panel if visible
+            document.getElementById('airstrikeCodePanel').style.display = 'none';
+
+            // Reset all shop card visual states
+            document.querySelectorAll('.shop-card').forEach(card => {
+                card.classList.remove('purchased');
+                card.querySelector('.shop-card-status').textContent = 'Click to Purchase';
+            });
 
             if (score > highScore) {
                 highScore = score;
@@ -5122,7 +5326,8 @@
                 'lives': 2,
                 'airstrike': 4,
                 'rainbow': 4,
-                'tsunami': 5
+                'tsunami': 5,
+                'slowmo': 3
             };
 
             const cost = costs[powerUpType];
@@ -5157,8 +5362,7 @@
                             shopItem.querySelector('.shop-card-status').textContent = 'Click to Purchase';
                         }
                     }, 4000);
-                    // Exit shop after purchase
-                    exitShop();
+                    // Shop stays open
                     break;
 
                 case 'lives':
@@ -5196,6 +5400,16 @@
                         shopItem.classList.add('purchased');
                         shopItem.querySelector('.shop-card-status').textContent = 'PURCHASED - Press T';
                     }
+                    break;
+
+                case 'slowmo':
+                    // Give player Slow Motion power-up
+                    powerUpSlowMotionOwned = true;
+                    if (shopItem) {
+                        shopItem.classList.add('purchased');
+                        shopItem.querySelector('.shop-card-status').textContent = 'PURCHASED - Press O';
+                    }
+                    // Shop stays open
                     break;
             }
 
