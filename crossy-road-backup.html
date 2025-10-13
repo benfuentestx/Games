@@ -18,7 +18,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background: linear-gradient(145deg, #4f46e5 0%, #7c3aed 50%, #9333ea 100%);
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
             font-family: 'Poppins', sans-serif;
             padding: 20px;
         }
@@ -30,7 +30,7 @@
             -webkit-backdrop-filter: blur(10px);
             padding: 30px;
             border-radius: 24px;
-            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.25),
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1),
                         0 0 0 1px rgba(255, 255, 255, 0.2) inset;
             border: 1px solid rgba(255, 255, 255, 0.18);
             max-width: 650px;
@@ -194,7 +194,6 @@
                 box-shadow: 0 6px 24px rgba(236, 72, 153, 0.8);
             }
         }
-@keyframes shake {            0%, 100% { transform: translate(0, 0); }            10%, 30%, 50%, 70%, 90% { transform: translate(-4px, 4px); }            20%, 40%, 60%, 80% { transform: translate(4px, -4px); }        }
 
         .settings-btn {
             position: absolute;
@@ -1219,7 +1218,7 @@
         let ghostPhasing = false; // Ghost phasing through cars
         let ghostPhasingUntil = 0; // Timestamp when phasing ends
         let ghostPhasingUsed = false; // Track if ghost has already used its one-time power
-        let dogSpeedBoost = 1.0135; // Emma (dog) is 1.35% faster (multiply movement by this)
+        let dogSpeedBoost = 1.008; // Emma (dog) is 0.8% faster (multiply movement by this)
         let militaryKnockedDown = false; // Military is knocked down after getting hit
         let militaryKnockdownTimer = 0; // Timer for knockdown animation
 
@@ -1336,11 +1335,6 @@
         let score = 0;
         let highScore = localStorage.getItem('crossyRoadHighScore') || 0;
         let cameraY = 0; // Camera offset for scrolling
-
-        // Parallax background offsets for depth effect
-        let parallaxSkyOffset = 0; // Sky layer moves at 10% of camera speed
-        let parallaxMidOffset = 0; // Mid layer moves at 30% of camera speed
-        let parallaxForegroundOffset = 0; // Foreground layer moves at 60% of camera speed
         let minRowGenerated = 0; // Track the furthest row we've generated (going into negatives)
         let startingWorldY = ROWS - 2; // Starting position
         let maxWorldY = ROWS - 2; // Track the furthest the player has gone (lowest value)
@@ -1384,7 +1378,6 @@
         // Roads and cars
         let roads = [];
         let cars = [];
-        let particles = []; // Particle explosion effects
 
         // Initialize game
         function init() {
@@ -1521,7 +1514,7 @@
             // Smooth player position interpolation (with dog speed boost if applicable)
             let playerLerpFactor = 0.25;
             if (selectedCharacter === 'dog') {
-                playerLerpFactor *= dogSpeedBoost; // Dog moves 1.35% faster
+                playerLerpFactor *= dogSpeedBoost; // Dog moves 0.8% faster
             }
             // Apply speed boost power-up
             if (powerUpSpeedBoostActive) {
@@ -1553,7 +1546,6 @@
                 }
             }
 
-// Update particles            updateParticles(deltaTime);
             // Update day/night cycle (horror mode)
             if (gameSettings.horrorMode) {
                 dayNightTimer += deltaTime;
@@ -1661,11 +1653,6 @@
             const targetCameraY = player.renderWorldY - (ROWS - 5);
             const lerpFactor = 0.15; // Smoothness factor (lower = smoother but slower)
             cameraY += (targetCameraY - cameraY) * lerpFactor;
-
-            // Update parallax offsets based on camera movement for depth effect
-            parallaxSkyOffset = cameraY * 0.10; // Sky moves at 10% speed (furthest back)
-            parallaxMidOffset = cameraY * 0.30; // Mid layer at 30% speed
-            parallaxForegroundOffset = cameraY * 0.60; // Foreground at 60% speed
 
             // Generate new roads as needed
             generateNewRoads();
@@ -1941,7 +1928,6 @@
             checkCollision();
         }
 
-// Particle explosion effect        function createParticleExplosion(x, y) {            const colors = ['#FFD700', '#FFA500', '#FF6347', '#FFFFFF', '#FFF59D'];            for (let i = 0; i < 20; i++) {                particles.push({                    x: x * GRID_SIZE,                    y: y * GRID_SIZE,                    vx: (Math.random() - 0.5) * 8,                    vy: (Math.random() - 0.5) * 8,                    life: 1.0,                    color: colors[Math.floor(Math.random() * colors.length)],                    size: Math.random() * 4 + 2                });            }        }        function updateParticles(deltaTime) {            for (let i = particles.length - 1; i >= 0; i--) {                const p = particles[i];                p.x += p.vx * deltaTime / 16.67;                p.y += p.vy * deltaTime / 16.67;                p.vy += 0.3;                p.life -= deltaTime / 1000;                if (p.life <= 0) particles.splice(i, 1);            }        }        function drawParticles() {            particles.forEach(p => {                ctx.save();                ctx.globalAlpha = p.life;                ctx.fillStyle = p.color;                ctx.fillRect(p.x, p.y - cameraY * GRID_SIZE, p.size, p.size);                ctx.restore();            });        }
         // Draw game
         function draw() {
             // Clear canvas with gradient sky (day or night)
@@ -2224,7 +2210,6 @@
             // Draw player (chicken) with camera offset using smooth render positions and hop offset
             const playerScreenY = (player.renderWorldY - cameraY) * GRID_SIZE;
             drawCharacter(player.renderX * GRID_SIZE + GRID_SIZE / 2, playerScreenY + GRID_SIZE / 2 - player.hopHeight, isFlying);
-// Draw particle explosions            drawParticles();
 
             // Draw airstrike missile
             if (airstrikeAnimating) {
@@ -3725,47 +3710,10 @@
                 ctx.translate(x, y + yOffset);
                 ctx.rotate(rotation);
 
-                // Draw knocked down soldier with camo pattern matching standing version
-                // Torso with gradient
-                const torsoGradientKnockdown = ctx.createLinearGradient(-size * 0.5, -size * 0.2, size * 0.5, -size * 0.2);
-                torsoGradientKnockdown.addColorStop(0, '#6B6650');
-                torsoGradientKnockdown.addColorStop(0.5, '#5C5843');
-                torsoGradientKnockdown.addColorStop(1, '#6B6650');
-                ctx.fillStyle = torsoGradientKnockdown;
+                // Draw simplified knocked down soldier (use camo colors)
+                ctx.fillStyle = '#5C5843';
                 ctx.fillRect(-size * 0.5, -size * 0.2, size, size * 1.3);
 
-                // Camouflage pattern on torso (darker spots)
-                ctx.fillStyle = '#4A4731';
-                ctx.beginPath();
-                ctx.arc(-size * 0.3, size * 0.2, size * 0.25, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(size * 0.35, size * 0.5, size * 0.3, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(size * 0.1, size * 0.7, size * 0.2, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Camouflage pattern (lighter tan spots)
-                ctx.fillStyle = '#736B52';
-                ctx.beginPath();
-                ctx.arc(size * 0.2, size * 0.1, size * 0.2, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(-size * 0.4, size * 0.6, size * 0.25, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Body armor/vest detail (darker rectangular shape) - matching standing version
-                ctx.fillStyle = 'rgba(50, 50, 45, 0.5)';
-                ctx.fillRect(-size * 0.45, size * 0.1, size * 0.9, size * 0.7);
-
-                // Chest pockets
-                ctx.strokeStyle = '#3D3A2F';
-                ctx.lineWidth = 1.5;
-                ctx.strokeRect(-size * 0.35, size * 0.3, size * 0.3, size * 0.25);
-                ctx.strokeRect(size * 0.05, size * 0.3, size * 0.3, size * 0.25);
-
-                // Arms with camo colors
                 ctx.strokeStyle = '#5C5843';
                 ctx.lineWidth = 8;
                 ctx.lineCap = 'round';
@@ -3778,16 +3726,6 @@
                 ctx.lineTo(size * 0.8, size * 0.5);
                 ctx.stroke();
 
-                // Hands (skin tone - matching standing version)
-                ctx.fillStyle = '#C29B7A';
-                ctx.beginPath();
-                ctx.arc(-size * 0.8, size * 0.5, size * 0.15, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(size * 0.8, size * 0.5, size * 0.15, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Head
                 ctx.fillStyle = '#C29B7A';
                 ctx.beginPath();
                 ctx.arc(0, -size * 0.6, size * 0.55, 0, Math.PI * 2);
@@ -3827,7 +3765,6 @@
                     ctx.fill();
                 }
 
-                // Legs with camo pants
                 ctx.strokeStyle = '#5C5843';
                 ctx.lineWidth = 10;
                 ctx.beginPath();
@@ -3839,17 +3776,7 @@
                 ctx.lineTo(size * 0.2, size * 1.3);
                 ctx.stroke();
 
-                // Knee pads (matching standing version)
-                ctx.fillStyle = '#3D3A2F';
-                ctx.beginPath();
-                ctx.arc(-size * 0.2, size * 1.0, size * 0.12, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(size * 0.2, size * 1.0, size * 0.12, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Boots (tan/brown - matching standing version)
-                ctx.fillStyle = '#6B5230';
+                ctx.fillStyle = '#2C2416';
                 ctx.fillRect(-size * 0.35, size * 1.2, size * 0.3, size * 0.2);
                 ctx.fillRect(size * 0.05, size * 1.2, size * 0.3, size * 0.2);
 
@@ -5194,7 +5121,7 @@
 
             // Emma (Dog) - always show speed boost indicator
             if (selectedCharacter === 'dog') {
-                powerDisplay.innerHTML = '🐕 Emma - Speed Boost: +1.35%';
+                powerDisplay.innerHTML = '🐕 Emma - Speed Boost: +0.8%';
                 powerDisplay.classList.remove('active');
             }
             // Goose - show honk availability
@@ -5249,8 +5176,6 @@
             }
 
             gameOver = true;
-// Create particle explosion at player position            createParticleExplosion(player.renderX, player.renderWorldY - cameraY);
-// Screen shake effect            const canvas = document.getElementById('gameCanvas');            canvas.style.animation = 'shake 0.5s';            setTimeout(() => canvas.style.animation = '', 500);
 
             // Reset all purchased power-ups on death
             powerUpSpeedBoost = 1.0;
@@ -5287,7 +5212,6 @@
 
         function winGame() {
             gameOver = true;
-// Create particle explosion at player position            createParticleExplosion(player.renderX, player.renderWorldY - cameraY);
 
             if (score > highScore) {
                 highScore = score;
