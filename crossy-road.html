@@ -780,56 +780,60 @@
         .game-over {
             display: none;
             position: fixed;
-            top: 50%;
+            top: 300px;
             left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.85);
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.92);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             color: white;
-            padding: 50px;
-            border-radius: 24px;
+            padding: 18px 28px;
+            border-radius: 16px;
             text-align: center;
             z-index: 10002;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-            min-width: 320px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+            max-width: 350px;
+            width: 80%;
         }
 
         .game-over h2 {
-            font-size: 3.5em;
-            margin-bottom: 20px;
+            font-size: 2.2em;
+            margin-bottom: 10px;
             background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             font-weight: 800;
+            line-height: 1.1;
         }
 
         .game-over p {
-            font-size: 1.2em;
-            margin: 10px 0;
-            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.8em;
+            margin: 4px 0;
+            color: rgba(255, 255, 255, 0.9);
         }
 
         .game-over button {
-            margin-top: 30px;
-            padding: 16px 48px;
-            font-size: 1.2em;
+            margin-top: 12px;
+            padding: 11px 30px;
+            font-size: 0.95em;
             font-weight: 600;
             background: linear-gradient(135deg, #6366f1, #8b5cf6);
             color: white;
             border: none;
-            border-radius: 16px;
+            border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+            width: 100%;
+            max-width: 200px;
         }
 
         .game-over button:hover {
             background: linear-gradient(135deg, #8b5cf6, #d946ef);
             transform: translateY(-2px);
-            box-shadow: 0 12px 32px rgba(139, 92, 246, 0.6);
+            box-shadow: 0 8px 28px rgba(139, 92, 246, 0.6);
         }
 
         .game-over button:active {
@@ -1378,8 +1382,19 @@
             color: '#FFD700',
             isHopping: false,
             hopProgress: 0,
-            hopHeight: 0
+            hopHeight: 0,
+            isSmushed: false, // Getting run over animation
+            smushProgress: 0 // 0 to 1 for smush animation (pancake effect)
         };
+
+        // Key state tracking for hold-to-stay mechanic
+        let keysHeld = {
+            up: false,
+            down: false,
+            left: false,
+            right: false
+        };
+        let isJumpingInAir = false; // Track if player is mid-jump
 
         // Roads and cars
         let roads = [];
@@ -1539,6 +1554,14 @@
                 }
             }
 
+            // Update smush animation (fast squash like getting run over)
+            if (player.isSmushed) {
+                player.smushProgress += deltaTime * 0.006; // Fast smush animation speed
+                if (player.smushProgress >= 1) {
+                    player.smushProgress = 1; // Cap at 1
+                }
+            }
+
             // Update flight timer
             if (isFlying) {
                 flightTimeRemaining -= deltaTime;
@@ -1636,25 +1659,46 @@
 
             // Update hopping animation (or flying animation)
             if (player.isHopping) {
-                player.hopProgress += deltaTime * 0.008; // Hop speed
-                if (player.hopProgress >= 1) {
-                    player.hopProgress = 0;
-                    player.isHopping = false;
-                    if (!isFlying) {
-                        player.hopHeight = 0;
+                // Check if any key is held - if so, pause at peak of jump
+                const anyKeyHeld = keysHeld.up || keysHeld.down || keysHeld.left || keysHeld.right;
+
+                if (anyKeyHeld && player.hopProgress >= 0.5 && player.hopProgress < 0.9) {
+                    // Hold at peak of jump when key is held
+                    player.hopProgress = 0.5;
+                    isJumpingInAir = true;
+                    if (isFlying) {
+                        player.hopHeight = 25;
+                    } else {
+                        player.hopHeight = 15; // Hold at peak height
                     }
                 } else {
-                    // Parabolic hop using sine wave (or floating effect when flying)
-                    if (isFlying) {
-                        // Gentle floating animation when flying
-                        player.hopHeight = 25 + Math.sin(player.hopProgress * Math.PI * 2) * 5;
+                    // Normal hop progression
+                    player.hopProgress += deltaTime * 0.008; // Hop speed
+                    isJumpingInAir = true;
+
+                    if (player.hopProgress >= 1) {
+                        player.hopProgress = 0;
+                        player.isHopping = false;
+                        isJumpingInAir = false;
+                        if (!isFlying) {
+                            player.hopHeight = 0;
+                        }
                     } else {
-                        player.hopHeight = Math.sin(player.hopProgress * Math.PI) * 15;
+                        // Parabolic hop using sine wave (or floating effect when flying)
+                        if (isFlying) {
+                            // Gentle floating animation when flying
+                            player.hopHeight = 25 + Math.sin(player.hopProgress * Math.PI * 2) * 5;
+                        } else {
+                            player.hopHeight = Math.sin(player.hopProgress * Math.PI) * 15;
+                        }
                     }
                 }
             } else if (isFlying) {
                 // Maintain flying height even when not moving
                 player.hopHeight = 25;
+                isJumpingInAir = false;
+            } else {
+                isJumpingInAir = false;
             }
 
             // Smooth camera interpolation (lerp) - prevents jerky movement
@@ -1942,6 +1986,93 @@
         }
 
 // Particle explosion effect        function createParticleExplosion(x, y) {            const colors = ['#FFD700', '#FFA500', '#FF6347', '#FFFFFF', '#FFF59D'];            for (let i = 0; i < 20; i++) {                particles.push({                    x: x * GRID_SIZE,                    y: y * GRID_SIZE,                    vx: (Math.random() - 0.5) * 8,                    vy: (Math.random() - 0.5) * 8,                    life: 1.0,                    color: colors[Math.floor(Math.random() * colors.length)],                    size: Math.random() * 4 + 2                });            }        }        function updateParticles(deltaTime) {            for (let i = particles.length - 1; i >= 0; i--) {                const p = particles[i];                p.x += p.vx * deltaTime / 16.67;                p.y += p.vy * deltaTime / 16.67;                p.vy += 0.3;                p.life -= deltaTime / 1000;                if (p.life <= 0) particles.splice(i, 1);            }        }        function drawParticles() {            particles.forEach(p => {                ctx.save();                ctx.globalAlpha = p.life;                ctx.fillStyle = p.color;                ctx.fillRect(p.x, p.y - cameraY * GRID_SIZE, p.size, p.size);                ctx.restore();            });        }
+        // Parallax background drawing functions
+        function drawParallaxClouds(offsetY, speed, opacity) {
+            // Draw distant clouds that move slowly
+            ctx.save();
+            ctx.globalAlpha = opacity;
+
+            const cloudY = offsetY * speed * GRID_SIZE;
+            const numClouds = 8;
+
+            for (let i = 0; i < numClouds; i++) {
+                const x = (i * 150 + cloudY * 0.5) % (canvas.width + 200) - 100;
+                const y = 50 + Math.sin(i * 2) * 30 + cloudY % 100;
+                drawCloud(x, y, 0.8 + (i % 3) * 0.2);
+            }
+
+            ctx.restore();
+        }
+
+        function drawCloud(x, y, scale) {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.beginPath();
+            ctx.arc(x, y, 15 * scale, 0, Math.PI * 2);
+            ctx.arc(x + 20 * scale, y, 20 * scale, 0, Math.PI * 2);
+            ctx.arc(x + 40 * scale, y, 15 * scale, 0, Math.PI * 2);
+            ctx.arc(x + 25 * scale, y - 10 * scale, 18 * scale, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawParallaxMountains(offsetY, speed) {
+            // Draw distant mountains that move at mid speed
+            ctx.save();
+
+            const mountainY = offsetY * speed * GRID_SIZE;
+            const baseY = canvas.height - 150 + (mountainY % 50);
+
+            // Draw mountain range
+            ctx.fillStyle = 'rgba(100, 120, 140, 0.3)';
+            ctx.beginPath();
+            ctx.moveTo(-50, baseY + 150);
+
+            for (let x = -50; x < canvas.width + 50; x += 80) {
+                const peakHeight = 80 + Math.sin((x + mountainY * 0.3) / 100) * 30;
+                ctx.lineTo(x + 40, baseY + 150 - peakHeight);
+            }
+
+            ctx.lineTo(canvas.width + 50, baseY + 150);
+            ctx.closePath();
+            ctx.fill();
+
+            // Draw closer mountain range
+            ctx.fillStyle = 'rgba(120, 140, 160, 0.4)';
+            ctx.beginPath();
+            ctx.moveTo(-50, baseY + 150);
+
+            for (let x = -50; x < canvas.width + 50; x += 100) {
+                const peakHeight = 60 + Math.sin((x + mountainY * 0.5) / 80) * 25;
+                ctx.lineTo(x + 50, baseY + 150 - peakHeight);
+            }
+
+            ctx.lineTo(canvas.width + 50, baseY + 150);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function drawParallaxForeground(offsetY, speed) {
+            // Draw foreground elements like distant trees/bushes
+            ctx.save();
+
+            const foregroundY = offsetY * speed * GRID_SIZE;
+            const numElements = 12;
+
+            for (let i = 0; i < numElements; i++) {
+                const x = (i * 100 + foregroundY * 0.2) % (canvas.width + 100) - 50;
+                const y = canvas.height - 80 + Math.sin(i * 3) * 15 + (foregroundY % 60);
+
+                // Draw simple bush/tree shapes
+                ctx.fillStyle = 'rgba(90, 140, 80, 0.25)';
+                ctx.beginPath();
+                ctx.ellipse(x, y, 12 + (i % 3) * 3, 20 + (i % 4) * 3, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            ctx.restore();
+        }
+
         // Draw game
         function draw() {
             // Clear canvas with gradient sky (day or night)
@@ -1971,6 +2102,11 @@
 
             ctx.fillStyle = skyGradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw parallax background layers for depth (before zoom/camera transforms)
+            drawParallaxClouds(parallaxSkyOffset, 1.0, 0.7); // Sky layer - slowest, most transparent
+            drawParallaxMountains(parallaxMidOffset, 1.0); // Mid layer - medium speed
+            drawParallaxForeground(parallaxForegroundOffset, 1.0); // Foreground layer - fastest
 
             // Apply camera zoom and offset for Tron Motorcycle effect
             ctx.save();
@@ -3304,6 +3440,20 @@
 
         // Main character drawing function
         function drawCharacter(x, y, flying = false) {
+            // Apply smush transformation if smushed (flatten like a pancake)
+            if (player.isSmushed) {
+                ctx.save();
+                ctx.translate(x, y);
+
+                // Squashed flat vertically (getting run over - pancake effect)
+                // Height shrinks dramatically, width expands to compensate
+                const heightScale = Math.max(0.1, 1 - player.smushProgress * 0.95); // Squash to nearly flat (10% height)
+                const widthScale = 1 + player.smushProgress * 1.2; // Expand width significantly (220% width)
+
+                ctx.scale(widthScale, heightScale);
+                ctx.translate(-x, -y);
+            }
+
             // If Tron Motorcycle is active, draw motorcycle instead of character
             if (slowMotionActive) {
                 drawTronMotorcycle(x, y);
@@ -3325,6 +3475,10 @@
                         drawDog(x, y, flying);
                         break;
                 }
+            }
+
+            if (player.isSmushed) {
+                ctx.restore();
             }
         }
 
@@ -4910,19 +5064,49 @@
                     const playerPos = player.x + 0.5;
 
                     if (playerPos >= carLeft && playerPos <= carRight) {
-                        // Military character has 2 lives - knock down and get back up
-                        if (selectedCharacter === 'military' && militaryLives > 1) {
-                            militaryLives--;
-                            militaryKnockedDown = true;
-                            militaryKnockdownTimer = 0; // Reset timer for knockdown animation (1.5 seconds)
-                            updatePowerDisplay();
-                        } else {
-                            endGame();
+                        // Always smush flat (like a pancake)
+                        if (!player.isSmushed) {
+                            player.isSmushed = true;
+                            player.smushProgress = 0;
+
+                            // Military character has 2 lives - knock down and get back up
+                            if (selectedCharacter === 'military' && militaryLives > 1) {
+                                militaryLives--;
+                                militaryKnockedDown = true;
+                                militaryKnockdownTimer = 0; // Reset timer for knockdown animation (1.5 seconds)
+                                updatePowerDisplay();
+                                // Reset smush for military - they have their own knockdown animation
+                                player.isSmushed = false;
+                            } else {
+                                // Start smush animation immediately
+                                // Delay game over to show smush animation
+                                setTimeout(() => {
+                                    endGame();
+                                }, 600); // 600ms to show smush animation
+                            }
                         }
                     }
                 }
             });
         }
+
+        // Track key releases for hold-to-stay mechanic
+        document.addEventListener('keyup', (e) => {
+            switch(e.key) {
+                case 'ArrowUp':
+                    keysHeld.up = false;
+                    break;
+                case 'ArrowDown':
+                    keysHeld.down = false;
+                    break;
+                case 'ArrowLeft':
+                    keysHeld.left = false;
+                    break;
+                case 'ArrowRight':
+                    keysHeld.right = false;
+                    break;
+            }
+        });
 
         // Handle keyboard input
         document.addEventListener('keydown', (e) => {
@@ -5029,19 +5213,31 @@
             switch(e.key) {
                 case 'ArrowUp':
                     e.preventDefault();
-                    handleMove('up');
+                    if (!keysHeld.up && !isJumpingInAir) {
+                        keysHeld.up = true;
+                        handleMove('up');
+                    }
                     break;
                 case 'ArrowDown':
                     e.preventDefault();
-                    handleMove('down');
+                    if (!keysHeld.down && !isJumpingInAir) {
+                        keysHeld.down = true;
+                        handleMove('down');
+                    }
                     break;
                 case 'ArrowLeft':
                     e.preventDefault();
-                    handleMove('left');
+                    if (!keysHeld.left && !isJumpingInAir) {
+                        keysHeld.left = true;
+                        handleMove('left');
+                    }
                     break;
                 case 'ArrowRight':
                     e.preventDefault();
-                    handleMove('right');
+                    if (!keysHeld.right && !isJumpingInAir) {
+                        keysHeld.right = true;
+                        handleMove('right');
+                    }
                     break;
             }
         });
@@ -5327,6 +5523,10 @@
             player.isHopping = false;
             player.hopProgress = 0;
             player.hopHeight = 0;
+            player.isSmushed = false;
+            player.smushProgress = 0;
+            isJumpingInAir = false;
+            keysHeld = { up: false, down: false, left: false, right: false };
             cars = [];
             roads = [];
             cameraY = ROWS - 2 - (ROWS - 5);
