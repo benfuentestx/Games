@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crossy Road 3D - Voxel Edition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            background: linear-gradient(145deg, #87CEEB 0%, #B0E0E6 100%);
+        }
+
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #ui {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.7);
+            z-index: 100;
+        }
+
+        #highScore {
+            font-size: 18px;
+        }
+
+        #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            color: white;
+            display: none;
+            z-index: 200;
+        }
+
+        #gameOver h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #ff6b6b;
+        }
+
+        #gameOver p {
+            font-size: 24px;
+            margin: 10px 0;
+        }
+
+        #gameOver button {
+            margin-top: 20px;
+            padding: 15px 40px;
+            font-size: 20px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #gameOver button:hover {
+            background: linear-gradient(135deg, #8b5cf6, #d946ef);
+        }
+
+        #instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            text-align: center;
+            font-size: 16px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer"></div>
+
+    <div id="ui">
+        <div>Score: <span id="score">0</span></div>
+        <div>High Score: <span id="highScore">0</span></div>
+    </div>
+
+    <div id="gameOver">
+        <h1>GAME OVER!</h1>
+        <p>Final Score: <span id="finalScore">0</span></p>
+        <p>High Score: <span id="finalHighScore">0</span></p>
+        <button onclick="restartGame()">Play Again</button>
+    </div>
+
+    <div id="instructions">
+        Arrow Keys to Move | Space to Jump
+    </div>
+
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        // Game State
+        let scene, camera, renderer;
+        let player;
+        let lanes = [];
+        let cars = [];
+        let score = 0;
+        let highScore = localStorage.getItem('crossy3DHighScore') || 0;
+        let gameOver = false;
+        let playerPosition = { x: 0, z: 0 };
+        let isJumping = false;
+        let isHopping = false;
+
+        // Game Constants
+        const LANE_WIDTH = 2;
+        const LANE_LENGTH = 100;
+        const VOXEL_SIZE = 0.5;
+        const PLAYER_SIZE = 0.8;
+        const CAR_SPEED = 0.05;
+        const NUM_LANES = 20;
+
+        // Colors (matching Crossy Road reference image)
+        const COLORS = {
+            grass: 0x7CB342,        // Grass green
+            grassDark: 0x689F38,    // Darker grass green
+            road: 0x5B6B7A,         // Blue-gray asphalt road (like reference)
+            roadDark: 0x4A5560,     // Darker road
+            river: 0x4DD0E1,        // Bright cyan water
+            roadLine: 0xFFEB3B,     // Yellow road lines
+            player: 0xFFFFFF,       // White chicken
+            playerDetail: 0xFF5722, // Orange/red details
+            carBody: [0x42A5F5, 0xFFEE58, 0xEF5350, 0x66BB6A, 0xFF7043, 0xAB47BC, 0xEC407A, 0x26C6DA], // Vibrant colors
+            carWindow: 0x1E88E5,    // Blue windows
+            carWindowDark: 0x1565C0, // Dark blue windows
+            building: [0xE53935, 0xD81B60, 0x8E24AA, 0x5E35B1, 0x3949AB, 0x1E88E5, 0x039BE5, 0x00ACC1], // Building colors
+            buildingWindow: 0x81D4FA, // Light blue windows
+            tree: 0x66BB6A,         // Tree green
+            treeTrunk: 0x6D4C41,    // Brown
+            crate: 0xA1887F         // Brown crates
+        };
+
+        // Initialize Game
+        function init() {
+            // Create Scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87CEEB);
+            scene.fog = new THREE.Fog(0x87CEEB, 20, 50);
+
+            // Create Camera (Classic 45-degree Crossy Road isometric view)
+            camera = new THREE.PerspectiveCamera(
+                45,
+                window.innerWidth / window.innerHeight,
+                0.1,
+                1000
+            );
+            // 45-degree angle from behind and above (equal X, Y, Z distances)
+            camera.position.set(12, 14, 12);
+            camera.lookAt(0, 0, 0);
+
+            // Create Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            document.getElementById('gameContainer').appendChild(renderer.domElement);
+
+            // Add Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(10, 20, 10);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048;
+            directionalLight.shadow.mapSize.height = 2048;
+            directionalLight.shadow.camera.near = 0.5;
+            directionalLight.shadow.camera.far = 50;
+            directionalLight.shadow.camera.left = -20;
+            directionalLight.shadow.camera.right = 20;
+            directionalLight.shadow.camera.top = 20;
+            directionalLight.shadow.camera.bottom = -20;
+            scene.add(directionalLight);
+
+            // Create Player
+            createPlayer();
+
+            // Create Initial Lanes
+            for (let i = -5; i < NUM_LANES; i++) {
+                createLane(i);
+            }
+
+            // Update High Score Display
+            document.getElementById('highScore').textContent = highScore;
+
+            // Handle Window Resize
+            window.addEventListener('resize', onWindowResize);
+
+            // Handle Keyboard Input
+            document.addEventListener('keydown', onKeyDown);
+
+            // Start Animation Loop
+            animate();
+        }
+
+        // Create Voxel Player (Chicken)
+        function createPlayer() {
+            const playerGroup = new THREE.Group();
+
+            // Body (yellow cube)
+            const bodyGeometry = new THREE.BoxGeometry(PLAYER_SIZE, PLAYER_SIZE, PLAYER_SIZE);
+            const bodyMaterial = new THREE.MeshLambertMaterial({ color: COLORS.player });
+            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            body.castShadow = true;
+            body.receiveShadow = true;
+            playerGroup.add(body);
+
+            // Head (smaller cube on top)
+            const headGeometry = new THREE.BoxGeometry(PLAYER_SIZE * 0.6, PLAYER_SIZE * 0.6, PLAYER_SIZE * 0.6);
+            const head = new THREE.Mesh(headGeometry, bodyMaterial);
+            head.position.y = PLAYER_SIZE * 0.8;
+            head.castShadow = true;
+            playerGroup.add(head);
+
+            // Beak (tiny cube)
+            const beakGeometry = new THREE.BoxGeometry(0.2, 0.15, 0.15);
+            const beakMaterial = new THREE.MeshLambertMaterial({ color: 0xFFA500 });
+            const beak = new THREE.Mesh(beakGeometry, beakMaterial);
+            beak.position.set(0, PLAYER_SIZE * 0.8, PLAYER_SIZE * 0.4);
+            beak.castShadow = true;
+            playerGroup.add(beak);
+
+            // Eyes (tiny black cubes)
+            const eyeGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+            const eyeMaterial = new THREE.MeshLambertMaterial({ color: 0x000000 });
+
+            const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+            leftEye.position.set(-0.15, PLAYER_SIZE * 0.9, PLAYER_SIZE * 0.3);
+            playerGroup.add(leftEye);
+
+            const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+            rightEye.position.set(0.15, PLAYER_SIZE * 0.9, PLAYER_SIZE * 0.3);
+            playerGroup.add(rightEye);
+
+            playerGroup.position.set(0, PLAYER_SIZE / 2, 0);
+            scene.add(playerGroup);
+            player = playerGroup;
+        }
+
+        // Create Lane (Grass, Road, or River)
+        function createLane(zPosition) {
+            const rand = Math.random();
+            // No rivers near spawn (first 5 lanes)
+            const canHaveRiver = zPosition < -5;
+            const isRoad = rand > 0.5; // 50% chance of road
+            const isRiver = canHaveRiver && !isRoad && rand > 0.35; // 15% chance of river (reduced from 25%)
+            const lane = {
+                z: zPosition * LANE_WIDTH,
+                isRoad: isRoad,
+                isRiver: isRiver,
+                objects: []
+            };
+
+            // Create Lane Ground with varied colors (grass, road, or river)
+            let groundColor;
+            if (isRiver) {
+                groundColor = COLORS.river;
+            } else if (isRoad) {
+                groundColor = COLORS.road;
+            } else {
+                groundColor = Math.random() > 0.5 ? COLORS.grass : COLORS.grassDark;
+            }
+
+            const geometry = new THREE.BoxGeometry(LANE_LENGTH, 0.3, LANE_WIDTH);
+            const material = new THREE.MeshLambertMaterial({
+                color: groundColor,
+                flatShading: true  // More blocky/voxel look
+            });
+            const ground = new THREE.Mesh(geometry, material);
+            ground.position.set(0, -0.15, lane.z);
+            ground.receiveShadow = true;
+            scene.add(ground);
+            lane.objects.push(ground);
+
+            // Buildings removed per user request
+
+            if (isRoad) {
+                // Add thin white center dashed lines (like reference image)
+                const dashLength = 1.2;
+                const gapLength = 0.8;
+                const dashWidth = 0.1; // Thin center line
+                const numDashes = Math.floor(LANE_LENGTH / (dashLength + gapLength));
+
+                for (let i = 0; i < numDashes; i++) {
+                    const dashX = -LANE_LENGTH / 2 + i * (dashLength + gapLength);
+                    const lineGeometry = new THREE.BoxGeometry(dashLength, 0.02, dashWidth);
+                    const lineMaterial = new THREE.MeshLambertMaterial({ color: 0xFFFFFF }); // White lines
+                    const line = new THREE.Mesh(lineGeometry, lineMaterial);
+                    line.position.set(dashX, 0, lane.z);
+                    scene.add(line);
+                    lane.objects.push(line);
+                }
+
+                // Spawn cars
+                if (zPosition < -1) { // Don't spawn cars too close to start
+                    const numCars = Math.floor(Math.random() * 2) + 1;
+                    const direction = Math.random() > 0.5 ? 1 : -1;
+
+                    for (let i = 0; i < numCars; i++) {
+                        const carX = (Math.random() - 0.5) * LANE_LENGTH * 0.8;
+                        createCar(carX, lane.z, direction);
+                    }
+                }
+            } else if (isRiver) {
+                // Add floating logs on rivers (in pairs of 2, smaller size)
+                // More logs to make crossing easier
+                if (zPosition < -1) {
+                    const numPairs = Math.floor(Math.random() * 3) + 3; // 3-5 pairs (more logs!)
+                    const direction = Math.random() > 0.5 ? 1 : -1;
+
+                    for (let i = 0; i < numPairs; i++) {
+                        // Create pair of logs close together
+                        const pairX = (Math.random() - 0.5) * LANE_LENGTH * 0.7;
+                        createLog(pairX - 0.8, lane.z, direction); // First log of pair
+                        createLog(pairX + 0.8, lane.z, direction); // Second log of pair (close to first)
+                    }
+                }
+            } else {
+                // Add decorations on grass (trees and crates)
+                if (zPosition < -1 && Math.random() > 0.5) {
+                    const numDecorations = Math.floor(Math.random() * 5) + 2;
+                    for (let i = 0; i < numDecorations; i++) {
+                        const decorX = (Math.random() - 0.5) * LANE_LENGTH * 0.9;
+                        if (Math.abs(decorX) > 2) { // Don't block path
+                            const rand = Math.random();
+                            if (rand > 0.7) {
+                                createTree(decorX, lane.z);
+                            } else if (rand > 0.4) {
+                                createCrate(decorX, lane.z);
+                            } else {
+                                createDecoration(decorX, lane.z);
+                            }
+                        }
+                    }
+                }
+            }
+
+            lanes.push(lane);
+        }
+
+        // Create Voxel Building
+        function createBuilding(x, z) {
+            const buildingGroup = new THREE.Group();
+            const width = 2 + Math.random() * 2;
+            const depth = 2 + Math.random() * 2;
+            const height = 2 + Math.random() * 4;
+            const buildingColor = COLORS.building[Math.floor(Math.random() * COLORS.building.length)];
+
+            // Main building body
+            const bodyGeometry = new THREE.BoxGeometry(width, height, depth);
+            const bodyMaterial = new THREE.MeshLambertMaterial({
+                color: buildingColor,
+                flatShading: true
+            });
+            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            body.position.y = height / 2;
+            body.castShadow = true;
+            body.receiveShadow = true;
+            buildingGroup.add(body);
+
+            // Add windows (small lighter cubes)
+            const windowSize = 0.3;
+            const windowsPerFloor = Math.floor(width / 0.8);
+            const numFloors = Math.floor(height / 0.8);
+
+            for (let floor = 0; floor < numFloors; floor++) {
+                for (let win = 0; win < windowsPerFloor; win++) {
+                    const windowGeometry = new THREE.BoxGeometry(windowSize, windowSize, 0.1);
+                    const windowMaterial = new THREE.MeshLambertMaterial({
+                        color: COLORS.buildingWindow,
+                        emissive: 0x81D4FA,
+                        emissiveIntensity: 0.3
+                    });
+                    const window = new THREE.Mesh(windowGeometry, windowMaterial);
+                    window.position.set(
+                        -width / 2 + 0.4 + win * 0.8,
+                        0.4 + floor * 0.8,
+                        depth / 2 + 0.05
+                    );
+                    buildingGroup.add(window);
+                }
+            }
+
+            buildingGroup.position.set(x, 0, z);
+            scene.add(buildingGroup);
+        }
+
+        // Create Voxel Car
+        function createCar(x, z, direction) {
+            const carGroup = new THREE.Group();
+            const carWidth = 1.0 + Math.random() * 0.4;
+            const carHeight = 0.7;
+            const carLength = 1.8 + Math.random() * 0.5;
+
+            // Random car color (bright and vibrant)
+            const carColor = COLORS.carBody[Math.floor(Math.random() * COLORS.carBody.length)];
+
+            // Car Body (main cube) - more boxy
+            const bodyGeometry = new THREE.BoxGeometry(carWidth, carHeight, carLength);
+            const bodyMaterial = new THREE.MeshLambertMaterial({
+                color: carColor,
+                flatShading: true
+            });
+            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            body.castShadow = true;
+            body.receiveShadow = true;
+            carGroup.add(body);
+
+            // Car Top/Cabin (smaller cube on top - positioned toward FRONT)
+            const cabinHeight = carHeight * 0.5;
+            const cabinGeometry = new THREE.BoxGeometry(carWidth * 0.85, cabinHeight, carLength * 0.6);
+            const cabin = new THREE.Mesh(cabinGeometry, bodyMaterial);
+            cabin.position.y = carHeight * 0.65;
+            cabin.position.z = carLength * 0.15; // Move toward front
+            cabin.castShadow = true;
+            carGroup.add(cabin);
+
+            // Windshield (front window - small black rectangles like reference)
+            const windshieldGeometry = new THREE.BoxGeometry(carWidth * 0.6, cabinHeight * 0.5, 0.1);
+            const windshieldMaterial = new THREE.MeshLambertMaterial({
+                color: 0x000000, // Black windows like reference
+                flatShading: true
+            });
+            const windshield = new THREE.Mesh(windshieldGeometry, windshieldMaterial);
+            windshield.position.set(0, carHeight * 0.7, carLength * 0.45); // At front
+            carGroup.add(windshield);
+
+            // Side windows (small black rectangles)
+            const sideWindowGeometry = new THREE.BoxGeometry(0.05, cabinHeight * 0.4, carLength * 0.35);
+            const leftWindow = new THREE.Mesh(sideWindowGeometry, windshieldMaterial);
+            leftWindow.position.set(-carWidth * 0.42, carHeight * 0.7, carLength * 0.1);
+            carGroup.add(leftWindow);
+
+            const rightWindow = new THREE.Mesh(sideWindowGeometry, windshieldMaterial);
+            rightWindow.position.set(carWidth * 0.42, carHeight * 0.7, carLength * 0.1);
+            carGroup.add(rightWindow);
+
+            // Wheels (black cubes protruding slightly)
+            const wheelGeometry = new THREE.BoxGeometry(0.15, 0.3, 0.3);
+            const wheelMaterial = new THREE.MeshLambertMaterial({ color: 0x212121 });
+
+            const wheelPositions = [
+                [-carWidth/2 - 0.05, -carHeight/3, carLength/2.5],
+                [carWidth/2 + 0.05, -carHeight/3, carLength/2.5],
+                [-carWidth/2 - 0.05, -carHeight/3, -carLength/2.5],
+                [carWidth/2 + 0.05, -carHeight/3, -carLength/2.5]
+            ];
+
+            wheelPositions.forEach(pos => {
+                const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
+                wheel.position.set(pos[0], pos[1], pos[2]);
+                wheel.castShadow = true;
+                carGroup.add(wheel);
+            });
+
+            // Add headlights (small yellow cubes)
+            const headlightGeometry = new THREE.BoxGeometry(0.2, 0.15, 0.1);
+            const headlightMaterial = new THREE.MeshLambertMaterial({
+                color: 0xFFFF00,
+                emissive: 0xFFFF00,
+                emissiveIntensity: 0.5
+            });
+
+            const leftHeadlight = new THREE.Mesh(headlightGeometry, headlightMaterial);
+            leftHeadlight.position.set(-carWidth * 0.3, -carHeight * 0.2, carLength / 2 + 0.05);
+            carGroup.add(leftHeadlight);
+
+            const rightHeadlight = new THREE.Mesh(headlightGeometry, headlightMaterial);
+            rightHeadlight.position.set(carWidth * 0.3, -carHeight * 0.2, carLength / 2 + 0.05);
+            carGroup.add(rightHeadlight);
+
+            carGroup.position.set(x, carHeight / 2, z);
+
+            // Rotate car to face movement direction
+            // Cars move along X-axis, so we need to orient them that way
+            if (direction > 0) {
+                // Moving right (+X direction) - rotate to face right
+                carGroup.rotation.y = -Math.PI / 2;
+            } else {
+                // Moving left (-X direction) - rotate to face left
+                carGroup.rotation.y = Math.PI / 2;
+            }
+
+            scene.add(carGroup);
+
+            cars.push({
+                mesh: carGroup,
+                speed: CAR_SPEED * direction * (0.8 + Math.random() * 0.4),
+                z: z,
+                width: carWidth,
+                length: carLength
+            });
+        }
+
+        // Create Floating Log (smaller size for pairs)
+        function createLog(x, z, direction) {
+            const logGroup = new THREE.Group();
+            const logWidth = 0.8; // Smaller width
+            const logHeight = 0.4;
+            const logLength = 1.5; // Smaller length (like reference image)
+
+            // Log body (white/cream color like reference image)
+            const logGeometry = new THREE.BoxGeometry(logWidth, logHeight, logLength);
+            const logMaterial = new THREE.MeshLambertMaterial({
+                color: 0xEEEEEE, // White/light gray
+                flatShading: true
+            });
+            const log = new THREE.Mesh(logGeometry, logMaterial);
+            log.position.y = 0.1; // Float slightly above water
+            log.castShadow = true;
+            log.receiveShadow = true;
+            logGroup.add(log);
+
+            // Add brown stripes to make it look like wood
+            const stripeGeometry = new THREE.BoxGeometry(logWidth + 0.05, 0.1, logLength + 0.05);
+            const stripeMaterial = new THREE.MeshLambertMaterial({ color: 0xD7CCC8 });
+            const stripe1 = new THREE.Mesh(stripeGeometry, stripeMaterial);
+            stripe1.position.y = 0.2;
+            logGroup.add(stripe1);
+
+            logGroup.position.set(x, 0, z);
+
+            // Rotate log to face movement direction
+            if (direction > 0) {
+                logGroup.rotation.y = -Math.PI / 2;
+            } else {
+                logGroup.rotation.y = Math.PI / 2;
+            }
+
+            scene.add(logGroup);
+
+            cars.push({
+                mesh: logGroup,
+                speed: CAR_SPEED * direction * 0.6, // Logs move slower than cars
+                z: z,
+                width: logWidth,
+                length: logLength,
+                isLog: true
+            });
+        }
+
+        // Create Voxel Tree
+        function createTree(x, z) {
+            const treeGroup = new THREE.Group();
+
+            // Trunk (brown cube)
+            const trunkGeometry = new THREE.BoxGeometry(0.3, 1, 0.3);
+            const trunkMaterial = new THREE.MeshLambertMaterial({ color: COLORS.treeTrunk });
+            const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+            trunk.position.y = 0.5;
+            trunk.castShadow = true;
+            trunk.receiveShadow = true;
+            treeGroup.add(trunk);
+
+            // Leaves (green cubes stacked)
+            const leafGeometry = new THREE.BoxGeometry(0.8, 0.8, 0.8);
+            const leafMaterial = new THREE.MeshLambertMaterial({ color: COLORS.tree });
+
+            for (let i = 0; i < 3; i++) {
+                const leaf = new THREE.Mesh(leafGeometry, leafMaterial);
+                leaf.position.y = 1 + i * 0.6;
+                leaf.castShadow = true;
+                leaf.receiveShadow = true;
+                treeGroup.add(leaf);
+            }
+
+            treeGroup.position.set(x, 0, z);
+            scene.add(treeGroup);
+        }
+
+        // Create Crate/Box
+        function createCrate(x, z) {
+            const crateGroup = new THREE.Group();
+            const size = 0.6 + Math.random() * 0.4;
+
+            // Main crate body (brown)
+            const crateGeometry = new THREE.BoxGeometry(size, size, size);
+            const crateMaterial = new THREE.MeshLambertMaterial({
+                color: COLORS.crate,
+                flatShading: true
+            });
+            const crate = new THREE.Mesh(crateGeometry, crateMaterial);
+            crate.position.y = size / 2;
+            crate.castShadow = true;
+            crate.receiveShadow = true;
+            crateGroup.add(crate);
+
+            // Add decorative stripes (darker brown)
+            const stripeGeometry = new THREE.BoxGeometry(size + 0.02, 0.1, size + 0.02);
+            const stripeMaterial = new THREE.MeshLambertMaterial({ color: 0x5D4037 });
+            const stripe = new THREE.Mesh(stripeGeometry, stripeMaterial);
+            stripe.position.y = size / 2;
+            crateGroup.add(stripe);
+
+            crateGroup.position.set(x, 0, z);
+            scene.add(crateGroup);
+        }
+
+        // Create Colorful Decoration Cubes
+        function createDecoration(x, z) {
+            const size = 0.5 + Math.random() * 0.4;
+            const decorColors = [0xE91E63, 0x9C27B0, 0x673AB7, 0xFF9800, 0xFFEB3B, 0x4CAF50];
+            const decorColor = decorColors[Math.floor(Math.random() * decorColors.length)];
+
+            const geometry = new THREE.BoxGeometry(size, size, size);
+            const material = new THREE.MeshLambertMaterial({
+                color: decorColor,
+                flatShading: true
+            });
+            const decoration = new THREE.Mesh(geometry, material);
+            decoration.position.set(x, size / 2, z);
+            decoration.castShadow = true;
+            decoration.receiveShadow = true;
+            decoration.rotation.y = Math.random() * Math.PI;
+            scene.add(decoration);
+        }
+
+        // Update Game
+        function update() {
+            if (gameOver) return;
+
+            // Update cars
+            cars.forEach(car => {
+                car.mesh.position.x += car.speed;
+
+                // Wrap cars around
+                if (car.mesh.position.x > LANE_LENGTH / 2) {
+                    car.mesh.position.x = -LANE_LENGTH / 2;
+                } else if (car.mesh.position.x < -LANE_LENGTH / 2) {
+                    car.mesh.position.x = LANE_LENGTH / 2;
+                }
+            });
+
+            // Check collisions
+            checkCollisions();
+
+            // Update camera to follow player (maintain 45-degree Crossy Road isometric angle)
+            camera.position.z = player.position.z + 12;
+            camera.position.x = player.position.x + 12;
+            camera.position.y = 14; // 45-degree diagonal view
+            camera.lookAt(player.position.x, 0, player.position.z);
+
+            // Generate new lanes ahead
+            if (player.position.z < lanes[lanes.length - 1].z + LANE_WIDTH * 5) {
+                const newZ = Math.floor(lanes[lanes.length - 1].z / LANE_WIDTH) - 1;
+                createLane(newZ);
+            }
+
+            // Remove old lanes behind player
+            if (lanes.length > 30) {
+                const oldLane = lanes.shift();
+                oldLane.objects.forEach(obj => {
+                    scene.remove(obj);
+                    obj.geometry.dispose();
+                    obj.material.dispose();
+                });
+            }
+        }
+
+        // Check Collisions
+        function checkCollisions() {
+            let onLog = false;
+            let logSpeed = 0;
+
+            // Check if player is on a log
+            cars.forEach(car => {
+                if (car.isLog) {
+                    const carX = car.mesh.position.x;
+                    const carZ = car.mesh.position.z;
+                    const playerX = player.position.x;
+                    const playerZ = player.position.z;
+
+                    // Check if player is on this log
+                    const onThisLog = Math.abs(carX - playerX) < (car.width / 2 + PLAYER_SIZE / 2) &&
+                                      Math.abs(carZ - playerZ) < (car.length / 2 + PLAYER_SIZE / 2);
+
+                    if (onThisLog && !isJumping) {
+                        onLog = true;
+                        logSpeed = car.speed;
+                    }
+                }
+            });
+
+            // Move player with log if standing on one
+            if (onLog && !isHopping) {
+                player.position.x += logSpeed;
+            }
+
+            // Check if player is in water (on a river lane but not on a log)
+            const currentLane = lanes.find(lane => Math.abs(lane.z - player.position.z) < LANE_WIDTH / 2);
+            if (currentLane && currentLane.isRiver && !onLog && !isJumping) {
+                // Player is in water! Drown animation
+                drownPlayer();
+                return;
+            }
+
+            // Check car collisions (only for actual cars, not logs)
+            cars.forEach(car => {
+                if (!car.isLog) {
+                    const carX = car.mesh.position.x;
+                    const carZ = car.mesh.position.z;
+                    const playerX = player.position.x;
+                    const playerZ = player.position.z;
+
+                    // Simple box collision
+                    const collisionX = Math.abs(carX - playerX) < (car.width / 2 + PLAYER_SIZE / 2);
+                    const collisionZ = Math.abs(carZ - playerZ) < (car.length / 2 + PLAYER_SIZE / 2);
+
+                    if (collisionX && collisionZ && !isJumping) {
+                        endGame();
+                    }
+                }
+            });
+        }
+
+        // Handle Keyboard Input
+        function onKeyDown(event) {
+            if (gameOver) return;
+
+            const moveDistance = LANE_WIDTH;
+
+            switch(event.key) {
+                case 'ArrowUp':
+                    event.preventDefault();
+                    movePlayer(0, -moveDistance);
+                    break;
+                case 'ArrowDown':
+                    event.preventDefault();
+                    movePlayer(0, moveDistance);
+                    break;
+                case 'ArrowLeft':
+                    event.preventDefault();
+                    movePlayer(-moveDistance, 0);
+                    break;
+                case 'ArrowRight':
+                    event.preventDefault();
+                    movePlayer(moveDistance, 0);
+                    break;
+                case ' ':
+                    event.preventDefault();
+                    jumpPlayer();
+                    break;
+            }
+        }
+
+        // Move Player
+        function movePlayer(dx, dz) {
+            player.position.x += dx;
+            player.position.z += dz;
+
+            // Rotate player to face movement direction
+            // Chicken's beak is at +Z by default (faces toward camera initially)
+            if (dz < 0) {
+                // Moving forward/up (toward -Z) - rotate 180° to face forward
+                player.rotation.y = Math.PI;
+            } else if (dz > 0) {
+                // Moving backward/down (toward +Z) - face backward (default)
+                player.rotation.y = 0;
+            } else if (dx < 0) {
+                // Moving left (-X) - rotate to face left
+                player.rotation.y = Math.PI / 2;
+            } else if (dx > 0) {
+                // Moving right (+X) - rotate to face right
+                player.rotation.y = -Math.PI / 2;
+            }
+
+            // Update score when moving forward (negative Z)
+            if (dz < 0 && player.position.z < playerPosition.z) {
+                score++;
+                document.getElementById('score').textContent = score;
+                playerPosition.z = player.position.z;
+            }
+
+            // Simple hop animation
+            animateHop();
+        }
+
+        // Jump Player
+        function jumpPlayer() {
+            if (isJumping) return;
+            isJumping = true;
+
+            const startY = player.position.y;
+            const jumpHeight = 1.5;
+            const jumpDuration = 300;
+            const startTime = Date.now();
+
+            const jumpAnimation = () => {
+                const elapsed = Date.now() - startTime;
+                const progress = elapsed / jumpDuration;
+
+                if (progress < 1) {
+                    const jumpY = startY + Math.sin(progress * Math.PI) * jumpHeight;
+                    player.position.y = jumpY;
+                    requestAnimationFrame(jumpAnimation);
+                } else {
+                    player.position.y = startY;
+                    isJumping = false;
+                }
+            };
+
+            jumpAnimation();
+        }
+
+        // Animate Hop (quick with smooth arc and stretch effect)
+        function animateHop() {
+            if (isHopping) return; // Prevent overlapping hops
+            isHopping = true;
+
+            const startY = PLAYER_SIZE / 2; // Always reset to ground level
+            const hopHeight = 0.8;
+            const hopDuration = 200; // Quick but smooth
+            const startTime = Date.now();
+            const startScale = { x: 1, y: 1, z: 1 };
+
+            const hopAnimation = () => {
+                const elapsed = Date.now() - startTime;
+                const progress = elapsed / hopDuration;
+
+                if (progress < 1) {
+                    // Smooth gradual arc using sine wave
+                    const hopY = startY + Math.sin(progress * Math.PI) * hopHeight;
+                    player.position.y = hopY;
+
+                    // Stretch effect - stretch vertically during ascent, compress during descent
+                    if (progress < 0.5) {
+                        // Ascending - stretch upward
+                        const stretchAmount = Math.sin(progress * 2 * Math.PI) * 0.3;
+                        player.scale.y = startScale.y + stretchAmount;
+                        player.scale.x = startScale.x - stretchAmount * 0.5;
+                        player.scale.z = startScale.z - stretchAmount * 0.5;
+                    } else {
+                        // Descending - compress slightly
+                        const compressAmount = Math.sin((progress - 0.5) * 2 * Math.PI) * 0.2;
+                        player.scale.y = startScale.y + compressAmount;
+                        player.scale.x = startScale.x - compressAmount * 0.5;
+                        player.scale.z = startScale.z - compressAmount * 0.5;
+                    }
+
+                    requestAnimationFrame(hopAnimation);
+                } else {
+                    player.position.y = startY;
+                    player.scale.set(startScale.x, startScale.y, startScale.z);
+                    isHopping = false;
+                }
+            };
+
+            hopAnimation();
+        }
+
+        // Drown Player Animation
+        function drownPlayer() {
+            if (gameOver) return;
+            gameOver = true;
+
+            const startY = player.position.y;
+            const sinkDepth = -2;
+            const drownDuration = 1000;
+            const startTime = Date.now();
+            const startRotation = player.rotation.z;
+
+            const drownAnimation = () => {
+                const elapsed = Date.now() - startTime;
+                const progress = elapsed / drownDuration;
+
+                if (progress < 1) {
+                    // Sink down into water
+                    player.position.y = startY + (sinkDepth - startY) * progress;
+
+                    // Tilt and spin while sinking
+                    player.rotation.z = startRotation + progress * Math.PI * 2;
+                    player.rotation.x = progress * Math.PI / 4;
+
+                    // Scale down (shrink)
+                    const scale = 1 - progress * 0.5;
+                    player.scale.set(scale, scale, scale);
+
+                    requestAnimationFrame(drownAnimation);
+                } else {
+                    // Animation complete, show game over
+                    if (score > highScore) {
+                        highScore = score;
+                        localStorage.setItem('crossy3DHighScore', highScore);
+                    }
+
+                    document.getElementById('finalScore').textContent = score;
+                    document.getElementById('finalHighScore').textContent = highScore;
+                    document.getElementById('gameOver').style.display = 'block';
+                }
+            };
+
+            drownAnimation();
+        }
+
+        // End Game
+        function endGame() {
+            gameOver = true;
+
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('crossy3DHighScore', highScore);
+            }
+
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('finalHighScore').textContent = highScore;
+            document.getElementById('gameOver').style.display = 'block';
+        }
+
+        // Restart Game
+        function restartGame() {
+            // Clear scene
+            lanes.forEach(lane => {
+                lane.objects.forEach(obj => {
+                    scene.remove(obj);
+                    obj.geometry.dispose();
+                    obj.material.dispose();
+                });
+            });
+
+            cars.forEach(car => {
+                scene.remove(car.mesh);
+            });
+
+            scene.remove(player);
+
+            // Reset variables
+            lanes = [];
+            cars = [];
+            score = 0;
+            gameOver = false;
+            playerPosition = { x: 0, z: 0 };
+            isJumping = false;
+            isHopping = false;
+
+            document.getElementById('score').textContent = '0';
+            document.getElementById('gameOver').style.display = 'none';
+
+            // Reinitialize
+            createPlayer();
+            for (let i = -5; i < NUM_LANES; i++) {
+                createLane(i);
+            }
+        }
+
+        // Window Resize Handler
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // Animation Loop
+        function animate() {
+            requestAnimationFrame(animate);
+            update();
+            renderer.render(scene, camera);
+        }
+
+        // Start Game
+        init();
+    </script>
+</body>
+</html>

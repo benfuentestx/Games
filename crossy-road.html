@@ -1206,6 +1206,66 @@
         const COLS = canvas.width / GRID_SIZE;
         const ROWS = canvas.height / GRID_SIZE;
 
+        // Isometric Graphics Configuration
+        const graphicsConfig = {
+            isometricView: true,
+            shadowEnabled: true,
+            voxelScale: GRID_SIZE,
+            lightAngle: 45, // degrees
+            isoAngle: 0.785, // 45° rotation (PI/4)
+            isoTilt: 0.523, // 30° tilt (PI/6)
+            shadowOpacity: 0.25,
+            shadowOffsetX: 8,
+            shadowOffsetY: 8,
+            heightScale: 0.5 // How much vertical height affects isometric Y
+        };
+
+        // Isometric Transformation Helper Functions
+        function toIso(x, y, z = 0) {
+            if (!graphicsConfig.isometricView) {
+                return { x, y: y - z };
+            }
+            // Convert 2D coordinates to isometric projection
+            const isoX = (x - y) * Math.cos(graphicsConfig.isoAngle);
+            const isoY = (x + y) * Math.sin(graphicsConfig.isoTilt) - z * graphicsConfig.heightScale;
+            return { x: isoX, y: isoY };
+        }
+
+        function drawIsometricShadow(x, y, width, height, objectHeight = 0) {
+            if (!graphicsConfig.shadowEnabled) return;
+
+            ctx.save();
+            ctx.globalAlpha = graphicsConfig.shadowOpacity;
+            ctx.fillStyle = 'black';
+
+            // Shadow gets smaller when object is higher
+            const shadowScale = 1 - (objectHeight * 0.01);
+            const shadowWidth = width * shadowScale;
+            const shadowHeight = height * 0.4 * shadowScale;
+
+            ctx.beginPath();
+            ctx.ellipse(
+                x + graphicsConfig.shadowOffsetX,
+                y + graphicsConfig.shadowOffsetY,
+                shadowWidth / 2,
+                shadowHeight / 2,
+                0, 0, Math.PI * 2
+            );
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function applyLightingGradient(x, y, width, height) {
+            // Create subtle top-left lighting
+            const gradient = ctx.createLinearGradient(
+                x - width / 2, y - height / 2,
+                x + width / 2, y + height / 2
+            );
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 0.1)');
+            gradient.addColorStop(1, 'rgba(0, 0, 0, 0.1)');
+            return gradient;
+        }
+
         // Character system
         let selectedCharacter = 'chick';
         const characters = {

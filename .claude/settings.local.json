@@ -11,7 +11,16 @@
       "Bash(git remote add:*)",
       "Bash(git remote set-url:*)",
       "Bash(git push:*)",
-      "Bash(where gh)"
+      "Bash(where gh)",
+      "Bash(start crossy-road-3d.html)",
+      "Bash(npm init -y)",
+      "Bash(npm install:*)",
+      "Bash(npx playwright install:*)",
+      "Bash(npm test)",
+      "Bash(where:*)",
+      "Bash(npx playwright test:*)",
+      "Bash(start view-reference-video.html)",
+      "Bash(npm test:*)"
     ],
     "deny": [],
     "ask": []

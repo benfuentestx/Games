@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reference Video Viewer</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        video {
+            max-width: 90%;
+            max-height: 70vh;
+            border: 3px solid #4CAF50;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Crossy Road Reference Video</h1>
+    <video id="video" controls>
+        <source src=".claude/Cluade videos/Untitled video - Made with Clipchamp.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <div class="controls">
+        <button onclick="video.playbackRate = 0.25">0.25x</button>
+        <button onclick="video.playbackRate = 0.5">0.5x</button>
+        <button onclick="video.playbackRate = 1">1x</button>
+        <button onclick="video.currentTime -= 0.1">⏪ Frame Back</button>
+        <button onclick="video.currentTime += 0.1">Frame Forward ⏩</button>
+    </div>
+
+    <p style="margin-top: 20px; text-align: center; max-width: 600px;">
+        Use the controls to watch the video in slow motion or frame-by-frame to analyze the chicken hop animation.
+    </p>
+</body>
+</html>
